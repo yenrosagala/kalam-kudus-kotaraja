@@ -115,7 +115,7 @@ const app = express();
 // jadi parser besar dipasang di /api/import dulu; parser umum lalu melewati yang sudah terisi.
 app.use('/api/import', express.json({ limit: '8mb' }));
 app.use(express.json({ limit: '300kb' }));
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+app.use(express.static(path.join(__dirname, 'root'), { extensions: ['html'] }));
 app.use('/api', (req, res, next) => { res.set('Cache-Control', 'no-cache'); next(); });
 
 // ---- jadwal ibadah komisi ----
