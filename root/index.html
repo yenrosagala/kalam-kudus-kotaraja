@@ -115,6 +115,7 @@
 <form id="fLogin" class="mzf" autocomplete="on" hidden>
 <h2>Masuk sebagai admin</h2>
 <p class="note" style="margin:0 0 6px">Menambah jadwal dan renungan hanya untuk pengelola.</p>
+<label>Email<input type="email" id="nemail" autocomplete="username" required></label>
 <label>Password<input type="password" id="npw" autocomplete="current-password" required></label>
 <div class="dact"><button class="btn dk" type="submit">Masuk</button><button class="sm" type="button" data-x>Batal</button></div>
 <p class="note" id="nmsg" role="alert"></p>
@@ -184,7 +185,7 @@
 <p class="note" style="margin:0 0 6px">Unduh template, isi di Excel, lalu unggah berkasnya. Baris yang sudah pernah ada
   akan <b>diperbarui</b>, bukan digandakan. Satu baris yang gagal tidak membatalkan baris lain.</p>
 <label>Jenis konten<select id="imp_jenis"><option value="jadwal">Jadwal ibadah</option><option value="mezbah">Renungan mezbah</option></select></label>
-<label>Template<a class="btn" id="imp_tpl" href="/api/template/jadwal" download style="text-decoration:none">Unduh template CSV</a></label>
+<label>Template<a class="btn" id="imp_tpl" href="#" role="button" style="text-decoration:none">Unduh template CSV</a></label>
 <label>Berkas CSV<input type="file" id="imp_file" accept=".csv,text/csv"></label>
 <div class="dact"><button class="btn dk" type="submit">Impor berkas</button><button class="sm" type="button" data-x>Tutup</button><button class="sm" type="button" id="impKembali" hidden>Kembali ke input manual</button></div>
 <div id="imp_out" class="note" role="status" style="margin-top:12px"></div>
@@ -201,6 +202,8 @@
 </dialog>
 <datalist id="nkom"><option>Pemuda</option><option>Remaja</option><option>PW</option><option>PKP</option></datalist>
 
+<script src="/vendor/supabase.min.js"></script>
+<script src="/supabase-config.js"></script>
 <script src="/app.js"></script>
 </body>
 </html>
