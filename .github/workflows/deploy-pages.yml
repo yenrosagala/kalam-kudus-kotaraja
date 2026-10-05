@@ -1,0 +1,44 @@
+name: Deploy Pages
+
+# GitHub Actions: hanya folder root/ yang jadi situs. Sumber branch langsung
+# (Settings > Pages > main /root) sempat aktif dan membuat server.js, db.js,
+# test, dan file SQL terunduh publik. Branch gh-pages menutup itu: isinya
+# persis apa yang ada di root/, tidak ada yang lain.
+#
+# Aset di index.html sengaja relatif (./style.css), bukan absolut (/style.css),
+# karena URL Pages punya prefix /kalam-kudus-kotaraja/.
+
+on:
+  push:
+    branches: [main]
+    paths: [root/**]
+  # Allows manual trigger from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One concurrent deployment; skip intermediate runs so the latest commit wins.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: root
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
