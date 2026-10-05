@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# runtime state - sqlite dibuat saat pertama jalan, db.js mengisi data contoh
+# bila tabel masih kosong (db.js:65). Jangan pernah di-commit: berisi data nyata.
+data/*.sqlite*
+data/backups/
+
+# sumber data.import berisi ~180 nama asli parishioner/pastor.
+# Repo ini public. Impor lewat admin page, jangan lewat file ini.
+jadwal ibadah.xlsx
+
+# secrets
+.env
+.env.*
+
+# OS & editor cruft
+.DS_Store
+Thumbs.db
+*.swp
