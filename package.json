@@ -2,16 +2,11 @@
   "name": "kalam-kudus-kotaraja",
   "version": "1.0.0",
   "private": true,
-  "description": "Situs statis GKKK Kotaraja. Tanpa server: Postgres Supabase + RLS, Supabase Auth untuk admin.",
+  "description": "Situs statis: HTML + CSS + JavaScript polos di root/, database di Supabase Postgres. Tanpa server, tanpa build step, tanpa dependency runtime.",
   "scripts": {
-    "test": "node test-port.js",
     "start": "echo 'Tidak ada server. Situs ini statis - buka root/index.html lewat GitHub Pages atau server statis apa saja.'"
   },
   "engines": {
     "node": ">=18"
-  },
-  "devDependencies": {
-    "better-sqlite3": "^13.0.3",
-    "express": "^4.19.2"
   }
 }

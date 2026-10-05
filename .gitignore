@@ -1,8 +1,8 @@
 # dependencies
 node_modules/
 
-# runtime state - sqlite dibuat saat pertama jalan, db.js mengisi data contoh
-# bila tabel masih kosong (db.js:65). Jangan pernah di-commit: berisi data nyata.
+# sisa runtime lokal dari versi SQLite lama (server.js/db.js sudah dihapus).
+# Polanya tetap diabaikan: file ini berisi data nyata, jangan pernah di-commit.
 data/*.sqlite*
 data/backups/
 
@@ -14,8 +14,8 @@ Tabel informasi jemaat.xlsx
 # lock file Excel:~$... muncul kalau workbook masih dibuka di Excel
 ~$*.xlsx
 
-# hasil generate tools/xlsx-ke-sql.js: memuat nama yang sama, jadi sama
-# perlakuan dengan xlsx. Jalankan skripnya lokal, tempel SQL-nya ke Supabase.
+# hasil konversi workbook jadwal -> SQL: memuat nama yang sama, jadi sama
+# perlakuan dengan xlsx. Jangan pernah di-commit; tempel ke Supabase lalu hapus.
 jadwal-import.sql
 
 # secrets
