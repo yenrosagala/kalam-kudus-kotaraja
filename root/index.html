@@ -54,7 +54,18 @@
 <div class="split">
 <div><h2>Siapa kami</h2><p class="lead" style="margin:0">Gereja Kristen Kalam Kudus Kotaraja adalah persekutuan orang percaya di Kotaraja, Jayapura. Isi bagian ini dengan sejarah singkat, visi, dan misi gereja.</p></div>
 <div class="card"><h3>Visi dan misi</h3><p>Tempat untuk visi dan misi gereja. Teks ini contoh, silakan ganti.</p></div>
-</div></div>
+</div>
+<div id="jmDash" hidden>
+<h2>Data Jemaat</h2>
+<p class="note" style="margin-top:0">Hanya terlihat oleh pengelola. Data nama, tanggal lahir, alamat, dan nomor HP tidak ditampilkan kepada pengunjung.</p>
+<div class="jmstat" id="jmStat"></div>
+<div class="dact" style="margin:0 0 14px"><button class="btn" id="jmTpl" type="button">Unduh template Excel</button><button class="btn" id="jmImp" type="button">Impor dari Excel</button></div>
+<p class="note" style="margin:0 0 10px">Pendaftaran dari form publik. Klik <b>Terima</b> untuk memindahkan orang ke daftar resmi.</p>
+<div id="jmPending"></div>
+<h3>Daftar resmi</h3>
+<div class="kfil"><select id="jmKlg" aria-label="Saring per keluarga"></select><input type="search" id="jmCari" placeholder="Cari nama..." aria-label="Cari emiten"></div>
+<div id="jmList"></div>
+</div>
 </div>
 
 <div class="page" id="jadwal">
@@ -100,6 +111,7 @@
 <div><dt>Telepon atau WhatsApp</dt><dd>Tambahkan nomor kontak gereja</dd></div>
 <div><dt>Media sosial</dt><dd>Tambahkan Instagram atau YouTube gereja</dd></div>
 </dl>
+<div class="dact" style="margin:22px 0 18px"><button class="btn dk" id="btnDaftar" type="button">Gabung menjadi Jemaat</button><button class="sm" id="btnJemaatImp" type="button" hidden>Impor data Jemaat</button></div>
 <iframe class="peta" title="Peta lokasi Gereja Kristen Kalam Kudus Kotaraja, Jayapura" loading="lazy" src="https://maps.google.com/maps?q=-2.6064034,140.6730183&amp;z=16&amp;output=embed"></iframe>
 <p class="note petaCap">Kotaraja, Jayapura, Papua &middot; <a href="https://maps.app.goo.gl/Do2Hqii7Tghm7hQh7" target="_blank" rel="noopener">Buka di Google Maps</a></p>
 </div>
@@ -184,11 +196,26 @@
 <h2>Impor dari Excel</h2>
 <p class="note" style="margin:0 0 6px">Unduh template, isi di Excel, lalu unggah berkasnya. Baris yang sudah pernah ada
   akan <b>diperbarui</b>, bukan digandakan. Satu baris yang gagal tidak membatalkan baris lain.</p>
-<label>Jenis konten<select id="imp_jenis"><option value="jadwal">Jadwal ibadah</option><option value="mezbah">Renungan mezbah</option></select></label>
+<label>Jenis konten<select id="imp_jenis"><option value="jadwal">Jadwal ibadah</option><option value="mezbah">Renungan mezbah</option><option value="jemaat">Data Jemaat</option></select></label>
 <label>Template<a class="btn" id="imp_tpl" href="#" role="button" style="text-decoration:none">Unduh template CSV</a></label>
 <label>Berkas CSV<input type="file" id="imp_file" accept=".csv,text/csv"></label>
 <div class="dact"><button class="btn dk" type="submit">Impor berkas</button><button class="sm" type="button" data-x>Tutup</button><button class="sm" type="button" id="impKembali" hidden>Kembali ke input manual</button></div>
 <div id="imp_out" class="note" role="status" style="margin-top:12px"></div>
+</form>
+
+<form id="fJemaat" class="mzf" autocomplete="off" hidden>
+<h2>Gabung menjadi Jemaat</h2>
+<p class="note" style="margin:0 0 6px">Isi data berikut. Pengelola akan memverifikasi dan memindahkan data ini ke daftar resmi. Jangan mengisi data orang lain.</p>
+<label>Nama lengkap<input id="j_nama" required maxlength="120"></label>
+<label>Nama keluarga<input id="j_nama_keluarga" maxlength="80" placeholder="Contoh: Sagala"></label>
+<label>Orang tua / kepala keluarga<input id="j_kepala" maxlength="120" placeholder="Contoh: Bapak Sagala / Ibu Simbolon"></label>
+<label>Jenis kelamin<select id="j_jk"><option value="">Pilih...</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
+<label>Tanggal lahir<input type="date" id="j_lahir" max="2026-12-31"></label>
+<label>Daerah asal<input id="j_daerah" maxlength="120"></label>
+<label>Alamat<textarea id="j_alamat" rows="2" maxlength="400"></textarea></label>
+<label>Nomor HP atau WhatsApp<input id="j_hp" inputmode="tel" maxlength="40" placeholder="08xx"></label>
+<div class="dact"><button class="btn dk" type="submit">Kirim pendaftaran</button><button class="sm" type="button" data-x>Batal</button></div>
+<p class="note" id="jmsg" role="alert"></p>
 </form>
 
 <div id="dBaca" hidden>

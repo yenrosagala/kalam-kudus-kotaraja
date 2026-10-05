@@ -9,6 +9,10 @@ data/backups/
 # sumber data.import berisi ~180 nama asli parishioner/pastor.
 # Repo ini public. Impor lewat admin page, jangan lewat file ini.
 jadwal ibadah.xlsx
+Tabel informasi jemaat.xlsx
+
+# lock file Excel:~$... muncul kalau workbook masih dibuka di Excel
+~$*.xlsx
 
 # hasil generate tools/xlsx-ke-sql.js: memuat nama yang sama, jadi sama
 # perlakuan dengan xlsx. Jalankan skripnya lokal, tempel SQL-nya ke Supabase.
