@@ -117,13 +117,11 @@ const SABDA = 'https://alkitab.sabda.org/';
 // SABDA ganti terjemahan default.
 const VER = '&version=TBS';
 function alkitabURL(ref) {
-  // Pemisah bacaan: ";" selalu, "," hanya kalau diikuti kitab+pasal baru.
-  // Jadi "Kisah Para Rasul 16:13-15, 40" tetap satu bacaan (koma di dalam
-  // daftar ayat), tapi "Amsal 4:20-27, Amsal 4:23" jadi dua bacaan.
-  const parts = String(ref || '')
-    .split(/\s*;\s*|\s*,\s*(?=[^,;]*?\s*\d+:\d)/).map(s => s.trim()).filter(Boolean);
+  const parts = String(ref || '').split(';').map(s => s.trim()).filter(Boolean);
   if (!parts.length) return '';
-  const refs = parts.map(s => s.match(/^(.+?)\s+(\d+):([\d\s,\-–]+)$/));
+  // Nama kitab tidak boleh mengandung ":" — tanpa itu "1 Tesalonika 4:3-8,
+  // 1 Korintus 6:20" ditelan jadi book="...1 Korintus", chapter=6 (salah).
+  const refs = parts.map(s => s.match(/^([^:]+?)\s+(\d+):([\d\s,\-–]+)$/));
   if (refs.some(r => !r)) return SABDA + 'search.php?search=' + encodeURIComponent(String(ref).trim()) + VER;
   if (refs.length === 1) {
     const [, kitab, pasal, ayat] = refs[0];

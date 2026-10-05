@@ -156,18 +156,16 @@ ok('multi ref isi kedua kitab', decodeURIComponent(u3).includes('Yakobus 1:19-20
 eq('rujukan kosong -> kosong', alkitabURL(''), '');
 eq('bukan rujukan -> search', alkitabURL('Renungan hari ini').includes('search.php'), true);
 
-// Data jadwal pakai DUA gaya pemisah. Koma ambigu: bisa antar bacaan
-// ("Amsal 4:20-27, Amsal 4:23") bisa antar ayat ("16:13-15, 40").
-const uKomaAntar = alkitabURL('Amsal 4:20\u201327, Amsal 4:23');
-ok('koma antar bacaan -> dipisah', decodeURIComponent(uKomaAntar).includes('Amsal 4:20\u201327; Amsal 4:23'));
-ok('koma antar bacaan -> search', uKomaAntar.includes('search.php'));
-const uKomaAyat = alkitabURL('Kisah Para Rasul 16:13\u201315, 40, Yosua 24:15');
-ok('koma dalam ayat dipertahankan', decodeURIComponent(uKomaAyat).includes('16:13\u201315, 40; Yosua 24:15'));
-ok('koma dalam ayat -> search', uKomaAyat.includes('search.php'));
+// Pemisah bacaan hanya ";" (sesuai format jadwal). Koma = pemisah ayat,
+// jadi "Yohanes 3:16, 18" tetap satu rujukan.
 const uAyatList = alkitabURL('Yohanes 3:16, 18');
 ok('daftar ayat -> bible.php', uAyatList.includes('bible.php'));
 ok('daftar ayat koma utuh', uAyatList.includes('verse=16%2C%2018'));
 ok('daftar ayat pin versi', uAyatList.endsWith('&version=TBS'));
+// Dua baris nyata yang harus jadi search.php, bukan bible.php dengan kitab
+// yang tertelan ayat sebelumnya ("book=1%20Tesalonika%204%3A3-8..." = salah).
+ok('kitab+ayat nempel -> search', alkitabURL('1 Tesalonika 4:3\u20138, 1 Korintus 6:20').includes('search.php'));
+ok('kitab+ayat nempel -> search', alkitabURL('Kisah Para Rasul 16:13\u201315, 40, Yosua 24:15').includes('search.php'));
 
 // refHTML: teks tetap terbaca + XSS aman di atribut href
 const h1 = refHTML('Matius 4:18-22');
