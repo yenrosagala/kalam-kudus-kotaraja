@@ -344,8 +344,8 @@ const NFIELDS = ['tipe', 'tanggal', 'komisi', 'judul', 'teks', 'nats_pembimbing'
 const NDEF = { tipe: 'KU', status: 'TERJADWAL', tempat: 'GKKK Kotaraja', waktu: '09.30 WIT' };
 let ADMIN = false;
 const panel = (id) => {
-  ['fLogin', 'dNew', 'dMz', 'fImp', 'fBerita', 'fJemaat', 'dBaca'].forEach(p => { $(p).hidden = p !== id; });
-  $('dlg').className = { fLogin: 'login', dNew: 'form', dMz: 'form', fImp: 'form', fBerita: 'form', fJemaat: 'form', dBaca: 'wide' }[id];
+  ['fLogin', 'dNew', 'dMz', 'fImp', 'fBerita', 'fJemaat', 'dJm', 'dBaca'].forEach(p => { $(p).hidden = p !== id; });
+  $('dlg').className = { fLogin: 'login', dNew: 'form', dMz: 'form', fImp: 'form', fBerita: 'form', fJemaat: 'form', dJm: 'form', dBaca: 'wide' }[id];
 };
 const Segarkan = async () => {
   ROWS = await qKomisi();
@@ -678,25 +678,50 @@ let JM = [], JMP = [];
 const JF = ['nama', 'nama_keluarga', 'kepala', 'jk', 'lahir', 'daerah', 'alamat', 'hp'];
 const jmTgl = (l) => { if (!l) return '-'; const t = tgl(l); return t.d + ' ' + BULAN[t.m].slice(0, 3) + ' ' + t.y; };
 const jmUsia = (l) => { if (!l) return ''; const u = new Date().getFullYear() - +l.slice(0, 4); return u >= 0 && u < 130 ? u + ' th' : ''; };
+// Satu pendaftaran keluarga = beberapa baris yang berbagi keluarga_ref.
+// Baris lama yang belum punya ref diperlakukan satu per satu lewat id, jadi
+// tidak pernah ikut tertimpa saat ada keluarga baru masuk.
+const refDaftar = (p) => p.keluarga_ref || 'id' + p.id;
+const grupDaftar = () => {
+  const g = new Map();
+  for (const p of JMP) { const k = refDaftar(p); if (!g.has(k)) g.set(k, []); g.get(k).push(p); }
+  return [...g.values()];
+};
+// Baris yang sedang tampil, ikut saringan keluarga + pencarian. Dipakai dua
+// kali: untuk tabel dan untuk berkas unduhan, jadi yang diunduh selalu sama
+// dengan yang terlihat di layar.
+const rowsJemaat = () => {
+  const cari = $('jmCari').value.trim().toLowerCase(), pil = $('jmKlg').value;
+  return JM.filter(r => (pil === '' || (r.no_keluarga || r.nama_keluarga) === pil)
+    && (!cari || (r.nama + ' ' + r.nama_keluarga).toLowerCase().includes(cari)));
+};
 const renderJemaat = () => {
   const kls = JM.map(r => r.no_keluarga || r.nama_keluarga).filter(Boolean);
   $('jmStat').innerHTML = [['Keluarga', new Set(kls).size], ['Jiwa', JM.length],
     ['Laki-laki', JM.filter(r => r.jk === 'L').length], ['Perempuan', JM.filter(r => r.jk === 'P').length],
     ['Menunggu', JMP.length]].map(([k, v]) => `<div><b>${v}</b><span>${k}</span></div>`).join('');
   $('jmPending').innerHTML = JMP.length
-    ? JMP.map(p => `<div class="jmrow"><div><b>${esc(p.nama)}</b> &middot; ${esc(p.jk || '-')} &middot; ${esc(p.nama_keluarga || 'tanpa nama keluarga')}`
-      + `<br><span>${esc(jmTgl(p.lahir))}${p.daerah ? ' &middot; ' + esc(p.daerah) : ''}${p.hp ? ' &middot; ' + esc(p.hp) : ''}</span></div>`
-      + `<button class="sm" type="button" data-terima="${p.id}">Terima</button></div>`).join('')
+    ? grupDaftar().map(grp => {
+        const s = grp[0];
+        return `<div class="jmrow"><div><b>${esc(s.nama)}</b> &middot; ${esc(s.jk || '-')} &middot; ${esc(s.nama_keluarga || 'tanpa nama keluarga')}`
+          + `<br><span>${esc(jmTgl(s.lahir))}${s.daerah ? ' &middot; ' + esc(s.daerah) : ''}${s.hp ? ' &middot; ' + esc(s.hp) : ''}</span>`
+          + (grp.length > 1 ? `<br><span>Anggota lain: ${grp.slice(1).map(p => esc(p.nama)).join(', ')}</span>` : '')
+          + `<br><span>${grp.length} orang</span></div>`
+          + `<button class="sm" type="button" data-terima="${esc(refDaftar(grp[0]))}">Terima</button></div>`;
+      }).join('')
     : '<p class="note" style="margin:0">Belum ada pendaftaran baru.</p>';
-  const cari = $('jmCari').value.trim().toLowerCase(), pil = $('jmKlg').value;
-  const list = JM.filter(r => (pil === '' || (r.no_keluarga || r.nama_keluarga) === pil)
-    && (!cari || (r.nama + ' ' + r.nama_keluarga).toLowerCase().includes(cari)));
+  const list = rowsJemaat();
   $('jmList').innerHTML = list.length
-    ? '<table class="jmtab"><thead><tr><th>No</th><th>Nama</th><th>L/P</th><th>Lahir</th><th>Usia</th><th>Keluarga</th><th>HP</th></tr></thead><tbody>'
+    ? '<table class="jmtab"><thead><tr><th>No</th><th>Nama</th><th>L/P</th><th>Lahir</th><th>Usia</th><th>Keluarga</th><th>HP</th><th></th></tr></thead><tbody>'
       + list.map(r => `<tr><td>${esc(r.no_keluarga)}</td><td>${esc(r.nama)}</td><td>${esc(r.jk || '-')}</td>`
-        + `<td>${esc(jmTgl(r.lahir))}</td><td>${esc(jmUsia(r.lahir))}</td><td>${esc(r.nama_keluarga)}</td><td>${esc(r.hp)}</td></tr>`).join('')
+        + `<td>${esc(jmTgl(r.lahir))}</td><td>${esc(jmUsia(r.lahir))}</td><td>${esc(r.nama_keluarga)}</td><td>${esc(r.hp)}</td>`
+        + `<td><button class="sm" type="button" data-ubah="${esc(r.id)}">Ubah</button></td></tr>`).join('')
       + '</tbody></table>'
     : '<p class="note" style="margin:0">Belum ada data. Unduh template Excel lalu impor, atau pakai tombol Impor di halaman Kontak.</p>';
+};
+$('jmList').onclick = e => {
+  const b = e.target.closest('[data-ubah]');
+  if (b) editJm(b.dataset.ubah);
 };
 // ponytail: seluruh daftar dimuat ke memori (untuk statistik, filter, dan nomor
 // keluarga otomatis). Cukup untuk ribuan jiwa; kalau tabel tumbuh sampai itu,
@@ -707,6 +732,86 @@ const loadJemaat = async () => {
   const kls = [...new Set(JM.map(r => r.no_keluarga || r.nama_keluarga).filter(Boolean))].sort();
   $('jmKlg').innerHTML = '<option value="">Semua keluarga</option>' + kls.map(k => `<option>${esc(k)}</option>`).join('');
   renderJemaat();
+  loadStatJemaat();
+};
+// Statistik publik di Tentang. Datanya dari view jemaat_ringkasan yang hanya
+// mengembalikan hitungan, jadi RLS public.jemaat tidak perlu dibuka dan
+// nama/alamat/HP tetap tidak bisa dibaca pengunjung.
+// ponytail: satu query, satu baris, lalu digambar jadi batang CSS. Kalau nanti
+// butuh grafik wielapis, ganti isi view-nya - jangan bawa pustaka grafik.
+const renderStat = (s) => {
+  const maks = Math.max(1, ...Object.values(s));
+  const bar = (label, n) => `<div class="jbar"><span>${label}</span><i style="width:${Math.round(n / maks * 100)}%"></i><b>${n}</b></div>`;
+  $('jStat').innerHTML = bar('Jiwa', s.jiwa) + bar('Keluarga', s.keluarga)
+    + bar('Laki-laki', s.laki) + bar('Perempuan', s.perempuan)
+    + bar('Anak (&lt;12)', s.anak) + bar('Remaja 13-17', s.remaja)
+    + bar('Dewasa 18-59', s.dewasa) + bar('Lansia 60+', s.lansia);
+  $('jStatKosong').hidden = s.jiwa > 0;
+};
+const loadStatJemaat = async () => {
+  const kosong = $('jStatKosong');
+  try {
+    const { data } = await sb(db('jemaat_ringkasan').select('*').limit(1));
+    if (data && data[0]) return renderStat(data[0]);
+    kosong.textContent = 'Belum ada data resmi untuk ditampilkan.';
+  } catch (er) {
+    // View-nya belum ada / belum dijalankan, bukan emptiness data.
+    kosong.textContent = 'Statistik belum siap diproses. Silakan hubungi pengelola.';
+  }
+  kosong.hidden = false;
+};
+// ---- Ubah data resmi + unduh CSV ---------------------------------------
+// RLS sudah mengizinkan UPDATE untuk yang login (lihat supabase-migration.sql),
+// jadi ini murni UI: tidak ada tabel, kolom, atau migration baru.
+const simpanJemaat = (r, id) => {
+  butuhAdmin();
+  return id ? sb(db('jemaat').update(r).eq('id', id).select().single())
+            : sb(db('jemaat').insert(r).select().single());
+};
+const editJm = (id) => {
+  const r = JM.find(x => String(x.id) === String(id));
+  if (!r) return;
+  JF.forEach(k => { $('ju_' + k).value = r[k] ?? ''; });
+  EDIT.id = r.id;
+  $('jumsg').textContent = 'Keluarga ' + (r.no_keluarga || '-') + ' - ' + r.nama;
+  bukaDlg('dJm', 'Ubah data jemaat');
+  $('ju_nama').focus();
+};
+$('dJm').onsubmit = async e => {
+  e.preventDefault();
+  const body = {};
+  JF.forEach(k => { body[k] = $('ju_' + k).value; });
+  $('jumsg').textContent = 'Menyimpan...';
+  try {
+    // no_keluarga dibuang supaya nomor keluarga tidak berubah tidak sengaja.
+    // Kolom diubah diisi di sisi ini, jadi tidak perlu trigger di database.
+    const { no_keluarga, ...row } = cleanJemaat(body);
+    if (row.hp && !/^[0-9+()\s.-]{6,}$/.test(row.hp)) throw new Error('Nomor HP hanya boleh berisi angka, spasi, dan tanda + - ( ).');
+    await simpanJemaat({ ...row, diubah: new Date().toISOString() }, EDIT.id);
+    $('dlg').close(); EDIT.id = null;
+    await loadJemaat();
+  } catch (er) { $('jumsg').textContent = er.message; }
+};
+// Unduh data resmi. Memakai saringan yang sedang aktif, jadi "Semua keluarga"
+// berarti seluruh database dan memilih satu keluarga hanya berarti keluarga itu.
+const JC = ['no_keluarga', ...JF];
+const csvJemaat = (list) => BOM + [csvRow(JC), ...list.map(r => csvRow(JC.map(c => {
+  const v = String(r[c] ?? '');
+  // Excel menjalankan nilai yang diawali = + - @ sebagai rumus, jadi dikunci
+  // dengan tanda kutip tunggal. ponytail: tanda kutip itu ikut tersimpan kalau
+  // nama mirip-rumus lalu berkas ini diimpor lagi - jarang, dan lebih baik
+  // daripada membuka rumus dari data yang tidak dipercaya.
+  return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
+})))].join('\r\n');
+$('jmCsv').onclick = () => {
+  const list = rowsJemaat();
+  if (!list.length) return alert('Tidak ada data yang cocok dengan saringan sekarang.');
+  const pil = $('jmKlg').value;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csvJemaat(list)], { type: 'text/csv;charset=utf-8' }));
+  a.download = 'jemaat' + (pil ? '-' + pil : '-semua') + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 };
 $('jmCari').oninput = $('jmKlg').onchange = renderJemaat;
 // Pendaftaran publik. Menulis ke jemaat_daftar, bukan jemaat: policy anon
@@ -714,19 +819,38 @@ $('jmCari').oninput = $('jmKlg').onchange = renderJemaat;
 // menyunting daftar resmi.
 $('btnDaftar').onclick = () => {
   JF.forEach(k => { $('j_' + k).value = ''; });
+  $('jAgg').innerHTML = '';
   $('jmsg').textContent = '';
   bukaDlg('fJemaat', 'Gabung menjadi Jemaat');
 };
+// Baris anggota keluarga. Pakai elemen <template> bawaan: satu baris ditulis
+// sekali di HTML, lalu disalin saat tombol ditekan.
+$('jTambahAgg').onclick = () => $('jAgg').appendChild($('tplAgg').content.cloneNode(true));
+$('jAgg').onclick = e => { const b = e.target.closest('[data-x]'); if (b) b.closest('.jagg').remove(); };
+// Satu pendaftaran = satu keluarga. Tiap orang jadi satu baris di
+// jemaat_daftar; semua baris berbagi satu keluarga_ref supaya admin
+// melihatnya sebagai satu keluarga, bukan daftar orang terpisah.
+const acakRef = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 $('fJemaat').onsubmit = async e => {
   e.preventDefault();
   const body = {};
   JF.forEach(k => { body[k] = $('j_' + k).value; });
   try {
-    const { no_keluarga, ...row } = cleanJemaat(body);
-    if (row.hp && !/^[0-9+()\s.-]{6,}$/.test(row.hp)) throw new Error('Nomor HP hanya boleh berisi angka, spasi, dan tanda + - ( ).');
-    await sb(db('jemaat_daftar').insert(row));
+    const { no_keluarga, ...kepala } = cleanJemaat(body);
+    if (kepala.hp && !/^[0-9+()\s.-]{6,}$/.test(kepala.hp)) throw new Error('Nomor HP hanya boleh berisi angka, spasi, dan tanda + - ( ).');
+    const ref = acakRef();
+    const rows = [{ ...kepala, keluarga_ref: ref }];
+    for (const box of $('jAgg').children) {
+      const a = { nama: box.querySelector('.a_nama').value, jk: box.querySelector('.a_jk').value, lahir: box.querySelector('.a_lahir').value };
+      if (!a.nama.trim() && !a.jk && !a.lahir) continue; // baris yang dikosongkan bukan anggota
+      const { no_keluarga: _nk, ...m } = cleanJemaat(a); // batas panjang sama seperti database
+      rows.push({ ...m, nama_keluarga: kepala.nama_keluarga, kepala: kepala.kepala, keluarga_ref: ref });
+    }
+    await sb(db('jemaat_daftar').insert(rows));
     JF.forEach(k => { $('j_' + k).value = ''; });
-    $('jmsg').innerHTML = '<b>Terima kasih, pendaftaran Anda sudah diterima.</b> Pengelola akan memverifikasi dan memasukkan data ini ke daftar resmi.';
+    $('jAgg').innerHTML = '';
+    $('jmsg').innerHTML = '<b>Terima kasih, pendaftaran Anda sudah diterima.</b> ' + rows.length
+      + ' orang dari keluarga ini tercatat. Pengelola akan memverifikasi dan memasukkan data ini ke daftar resmi.';
   } catch (er) { $('jmsg').textContent = er.message; }
 };
 const bukaImpJemaat = () => {
@@ -739,16 +863,35 @@ $('btnJemaatImp').onclick = bukaImpJemaat;
 $('jmImp').onclick = bukaImpJemaat;
 $('jmTpl').onclick = () => { $('imp_jenis').value = 'jemaat'; $('imp_tpl').click(); };
 // Nomor keluarga untuk pendaftar yang diterima dibuat otomatis supaya tidak
-// bentrok dengan nomor yang sudah dipakai di daftar resmi.
+// bentrok dengan nomor yang sudah dipakai di daftar resmi. Satu nomor dipakai
+// oleh seluruh anggota keluarga itu, karena no_keluarga yang mengelompokkan.
 $('jmPending').onclick = async e => {
   const t = e.target.closest('[data-terima]');
   if (!t) return;
-  const p = JMP.find(x => x.id === +t.dataset.terima);
-  if (!p || !confirm('Terima ' + p.nama + ' ke daftar resmi?')) return;
+  const ref = t.dataset.terima;
+  const grp = JMP.filter(p => refDaftar(p) === ref);
+  if (!grp.length) return;
+  const namaKlg = grp[0].nama_keluarga || grp[0].nama;
+  if (!confirm('Terima ' + grp.length + ' orang dari keluarga ' + namaKlg + ' ke daftar resmi?')) return;
   t.disabled = true;
   try {
-    await sb(db('jemaat').upsert([{ no_keluarga: String(Math.max(0, ...JM.map(r => +r.no_keluarga || 0)) + 1), nama_keluarga: p.nama_keluarga, nama: p.nama, kepala: p.kepala, jk: p.jk, lahir: p.lahir, daerah: p.daerah, alamat: p.alamat, hp: p.hp }], { onConflict: 'no_keluarga,nama' }));
-    await sb(db('jemaat_daftar').delete().eq('id', p.id));
+    const no = String(Math.max(0, ...JM.map(r => +r.no_keluarga || 0)) + 1);
+    // Dua orang bers nama sama dalam satu keluarga akan menabrak UNIQUE
+    // (no_keluarga, nama) dan menggagalkan seluruh approve, jadi sekali lagi
+    // dibuang di sini.
+    const unik = [...new Map(grp.map(p => [p.nama, p])).values()];
+    await sb(db('jemaat').upsert(unik.map(p => ({
+      no_keluarga: no, nama_keluarga: p.nama_keluarga, nama: p.nama, kepala: p.kepala,
+      jk: p.jk, lahir: p.lahir, daerah: p.daerah, alamat: p.alamat, hp: p.hp
+    })), { onConflict: 'no_keluarga,nama' }));
+    // Hapus lewat keluarga_ref kalau baris itu punya; baris pendaftaran lama
+    // tidak punya, jadi ikut terhapus lewat id-nya. Dicek dari datanya, bukan
+    // dari awalan "id", supaya ref acak yang kebetulan diawali huruf yang sama
+    // tidak salah hapus.
+    const del = grp[0].keluarga_ref
+      ? sb(db('jemaat_daftar').delete().eq('keluarga_ref', ref))
+      : sb(db('jemaat_daftar').delete().eq('id', grp[0].id));
+    await del;
     await loadJemaat();
   } catch (er) { t.disabled = false; $('jmPending').prepend(er); }
 };
@@ -843,4 +986,6 @@ async function refreshDaily() {
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshDaily(); });
 setInterval(refreshDaily, 300000);
+// Statistik publik tidak butuh login, jadi dimuat sekali saat halaman dibuka.
+loadStatJemaat();
 route();

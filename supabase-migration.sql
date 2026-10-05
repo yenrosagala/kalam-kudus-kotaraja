@@ -268,6 +268,57 @@ GRANT USAGE, SELECT ON SEQUENCE public.jemaat_id_seq, public.jemaat_daftar_id_se
 GRANT USAGE         ON SEQUENCE public.jemaat_daftar_id_seq TO anon;
 
 -- =====================================================================
+--  3. KELUARGA SEBAGAI BEBERAPA ORANG
+--
+-- Data jemaat sudah satu baris per orang, dikelompokkan lewat
+--  no_keluarga. Jadi tidak perlu tabel baru: satu keluarga = beberapa baris
+--  yang berbagi no_keluarga. Yang kurang cuma penanda di tabel antrean, supaya
+--  admin tahu baris-baris mana satu pengiriman, bukan daftar terpisah.
+--  keluarga_ref diisi browser (acak per submit), bukan nomor resmi.
+-- =====================================================================
+ALTER TABLE public.jemaat_daftar
+  ADD COLUMN IF NOT EXISTS keluarga_ref text NOT NULL DEFAULT '';
+
+ALTER TABLE public.jemaat_daftar
+  DROP CONSTRAINT IF EXISTS c_jd_ref;
+ALTER TABLE public.jemaat_daftar
+  ADD CONSTRAINT c_jd_ref CHECK (char_length(keluarga_ref) <= 40);
+
+CREATE INDEX IF NOT EXISTS idx_jd_ref ON public.jemaat_daftar (keluarga_ref);
+
+-- =====================================================================
+--  4. STATISTIK PUBLIK (view, bukan tabel)
+--
+--  Halaman Tentang boleh menampilkan angka, bukan orang. View ini hanya
+--  berisi hitungan, tidak pernah mengembalikan baris, jadi RLS di
+--  public.jemaat tidak perlu dibuka untuk anon. View bawaan Postgres
+--  berjalan dengan hak pembuatnya (postgres), jadi RLS dilewati - aman
+--  HANYA selama isinya agregat. Jangan pernah menambah kolom nama,
+--  alamat, atau nomor HP di sini.
+--
+--  Untuk menyembunyikan statistik dari publik: hapus GRANT di baris
+--  bawah, lalu jangan panggil view dari app.js. Tidak perlu mengDrop
+--  tabel apa pun.
+-- =====================================================================
+CREATE OR REPLACE VIEW public.jemaat_ringkasan AS
+SELECT
+  count(*)::int                                                          AS jiwa,
+  count(DISTINCT NULLIF(no_keluarga, ''))::int                           AS keluarga,
+  count(*) FILTER (WHERE jk = 'L')::int                                  AS laki,
+  count(*) FILTER (WHERE jk = 'P')::int                                  AS perempuan,
+  count(*) FILTER (WHERE lahir IS NOT NULL
+                     AND date_part('year', age(current_date, lahir)) < 12)::int  AS anak,
+  count(*) FILTER (WHERE lahir IS NOT NULL
+                     AND date_part('year', age(current_date, lahir)) BETWEEN 13 AND 17)::int AS remaja,
+  count(*) FILTER (WHERE lahir IS NOT NULL
+                     AND date_part('year', age(current_date, lahir)) BETWEEN 18 AND 59)::int AS dewasa,
+  count(*) FILTER (WHERE lahir IS NOT NULL
+                     AND date_part('year', age(current_date, lahir)) >= 60)::int AS lansia
+FROM public.jemaat;
+
+GRANT SELECT ON public.jemaat_ringkasan TO anon, authenticated;
+
+-- =====================================================================
 --  LANGKAH SETELAH MENJALANKAN FILE INI:
 --
 --  1. Rotate password postgres  (sudah kamu paste di chat - WAJIB ganti)

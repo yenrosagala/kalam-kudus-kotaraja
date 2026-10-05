@@ -26,11 +26,11 @@ ctx.window.scrollTo = () => {};
 ctx.els = els;
 
 const src = fs.readFileSync(path.join(__dirname, 'root', 'app.js'), 'utf8');
-const probe = '\n;globalThis.__t={parseCSV,cleanJemaat,SPECS,renderJemaat,jmTgl,jmUsia,' +
+const probe = '\n;globalThis.__t={parseCSV,cleanJemaat,SPECS,renderJemaat,jmTgl,jmUsia,csvJemaat,JC,rowsJemaat,' +
   'setJM:(v,p)=>{JM=v;JMP=p},stat:()=>els.jmStat.innerHTML,list:()=>els.jmList.innerHTML,pend:()=>els.jmPending.innerHTML};';
 vm.runInContext(src + probe, ctx, { filename: 'app.js' });
 
-const { parseCSV, cleanJemaat, SPECS, renderJemaat, jmTgl, jmUsia } = ctx.__t;
+const { parseCSV, cleanJemaat, SPECS, renderJemaat, jmTgl, jmUsia, csvJemaat, JC } = ctx.__t;
 let n = 0, bad = 0;
 const ok = (name, cond) => { n++; if (!cond) { bad++; console.log('  GAGAL: ' + name); } };
 const eq = (name, got, want) => ok(name + ' (dapat ' + JSON.stringify(got) + ', harus ' + JSON.stringify(want) + ')', JSON.stringify(got) === JSON.stringify(want));
@@ -93,7 +93,31 @@ ok('stat: 1 menunggu', stat.includes('<b>1</b>'));
 ok('daftar: semua nama masuk', ['Yenro Sagala', 'Jolief Sagala', 'Juniarty Simbolong'].every(x => list.includes(x)));
 ok('daftar: kolom usia terisi', /\d+ th<\/td>/.test(list));
 ok('pending: pendaftar tampil', pend.includes('Calon Jemaat'));
-ok('pending: tombol terima ada', pend.includes('data-terima="7"'));
+// Baris tanpa keluarga_ref (pendaftaran lama) tetap satu per satu lewat id.
+ok('pending: tombol terima pakai id untuk baris lama', pend.includes('data-terima="id7"'));
+ok('pending: jumlah orang disebut', pend.includes('1 orang'));
+
+// ---- pendaftaran sebagai satu keluarga ---------------------------------
+// Tiga orang dikirim bersama: kepala + 2 anggota. Semua harus dapat satu
+// keluarga_ref yang sama, dan hanya kepala yang membawa alamat/HP.
+ctx.__t.setJM([], [
+  { id: 1, nama: 'Ayah S', nama_keluarga: 'S', kepala: 'Ayah S', jk: 'L', lahir: '1985-02-02', daerah: 'Merauke', alamat: 'Jl. M', hp: '0812', keluarga_ref: 'abc' },
+  { id: 2, nama: 'Ibu S', nama_keluarga: 'S', kepala: 'Ayah S', jk: 'P', lahir: '1988-03-03', daerah: '', alamat: '', hp: '', keluarga_ref: 'abc' },
+  { id: 3, nama: 'Anak S', nama_keluarga: 'S', kepala: 'Ayah S', jk: 'P', lahir: '2016-04-04', daerah: '', alamat: '', hp: '', keluarga_ref: 'abc' },
+  { id: 4, nama: 'Sendiri', nama_keluarga: 'T', kepala: '', jk: 'L', lahir: '1995-05-05', daerah: '', alamat: '', hp: '', keluarga_ref: 'xyz' }
+]);
+renderJemaat();
+const pendK = ctx.__t.pend();
+ok('keluarga: 3 orang jadi satu kartu', pendK.includes('3 orang'));
+ok('keluarga: anggota lain disebut', pendK.includes('Anak S') && pendK.includes('Ibu S'));
+ok('keluarga: satu kartu per keluarga', (pendK.match(/data-terima=/g) || []).length === 2);
+ok('keluarga: ref jadi tombol terima', pendK.includes('data-terima="abc"') && pendK.includes('data-terima="xyz"'));
+ok('keluarga: 4 orang menunggu di 2 kartu', ctx.__t.stat().includes('<b>4</b>') && pendK.match(/data-terima=/g).length === 2);
+
+// Nama keluarga dari antrean harus ter-escape juga (XSS bisa datang dari mana saja)
+ctx.__t.setJM([], [{ id: 9, nama: '<script>alert(3)</script>', nama_keluarga: 'X', jk: 'L', lahir: null, hp: '', keluarga_ref: 'z' }]);
+renderJemaat();
+ok('XSS: nama di antrean di-escape', !ctx.__t.pend().includes('<script>alert(3)'));
 
 // nama dari Excel/DB harus ter-escape, bukan jadi HTML.
 ctx.__t.setJM([{ no_keluarga: '1', nama_keluarga: '<img src=x onerror=alert(1)>', nama: '<script>alert(2)</script>', jk: 'L', lahir: null, hp: '' }], []);
@@ -149,6 +173,31 @@ ok('setiap .page adalah anak langsung (depth 0)',
 if (depths.some(([, dd]) => dd !== 0)) {
   console.log('    page terdalam: ' + depths.filter(([, dd]) => dd !== 0).map(([n2, dd]) => n2 + '@' + dd).join(', '));
 }
+
+// ---- tombol Ubah + unduh CSV ------------------------------------------
+ctx.__t.setJM([{ id: 42, no_keluarga: '7', nama: 'Yenro Sagala', nama_keluarga: 'Sagala', jk: 'L', lahir: '1990-01-31', hp: '0812', daerah: 'Samosir', alamat: 'Kotaraja', kepala: 'Bapak Sagala' }], []);
+renderJemaat();
+ok('edit: tiap baris punya tombol Ubah', ctx.__t.list().includes('data-ubah="42"'));
+// id harus masuk sebagai atribut data, bukan HTML mentah
+ctx.__t.setJM([{ id: 43, no_keluarga: '8', nama: 'x" onmouseover="alert(1)', nama_keluarga: '', jk: '', lahir: null, hp: '', daerah: '', alamat: '', kepala: '' }], []);
+renderJemaat();
+ok('edit: id di-escape di atribut', !ctx.__t.list().includes('onmouseover="alert(1)"'));
+
+eq('csv: header = no_keluarga + kolom JF', JC.join(','), 'no_keluarga,nama,nama_keluarga,kepala,jk,lahir,daerah,alamat,hp');
+const satu = [{ id: 1, no_keluarga: '7', nama: 'Yenro Sagala', nama_keluarga: 'Sagala', kepala: 'Bapak Sagala', jk: 'L', lahir: '1990-01-31', daerah: 'Samosir', alamat: 'Kotaraja', hp: '0812' }];
+const txt = csvJemaat(satu);
+const baris = parseCSV(txt);
+eq('csv: 1 header + 1 data', baris.length, 2);
+eq('csv: isi baris data', baris[1][0] + '|' + baris[1][1] + '|' + baris[1][5], '7|Yenro Sagala|1990-01-31');
+ok('csv: ada BOM buat Excel', txt.charCodeAt(0) === 0xFEFF);
+// Nilai yang diawali = + - @ akan dieksekusi Excel sebagai rumus. Ini kunci
+// keamanan, bukan tampilan: tanpa ini, satu nama bisa jadi formula injection.
+for (const [bahaya, sah] of [['=1+1', "'=1+1"], ['+CMD', "'+CMD"], ['@SUM(A1)', "'@SUM(A1)"], ['-2+3', "'-2+3"]]) {
+  ok('csv: rumus dikunci (' + bahaya + ')', csvJemaat([{ nama: bahaya }]).includes(sah));
+}
+ok('csv: nama normal tidak diubah', csvJemaat([{ nama: 'Yenro Sagala' }]).includes(',Yenro Sagala,'));
+ok('csv: koma di nilai tetap aman', csvJemaat([{ nama: 'a,b' }]).includes('"a,b"'));
+ok('csv: null jadi kolom kosong', csvJemaat([{ nama: null }]).split('\r\n')[1].replace(/,\$/, '').split(',').length === JC.length);
 
 console.log('\n' + (bad ? 'GAGAL ' + bad + '/' : 'lulus ') + n + ' pemeriksaan');
 process.exit(bad ? 1 : 0);

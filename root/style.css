@@ -152,7 +152,7 @@ dialog.wide{width:min(880px,calc(100% - 32px));padding:30px 32px}
 .pre{white-space:pre-wrap;margin:0}
 .read .sub{font-weight:600;margin:18px 0 4px;color:var(--sea)}
 .mzf{display:grid;gap:14px;align-content:start}
-.mzf > h2,.mzf > .dact,.mzf > .note{grid-column:1/-1}
+.mzf > h2,.mzf > h3,.mzf > .dact,.mzf > .note{grid-column:1/-1}
 /* form panjang jadi 2 kolom; paragraf panjang tetap full width */
 dialog.form .mzf{grid-template-columns:1fr 1fr;column-gap:18px}
 dialog.form .mzf label:has(textarea){grid-column:1/-1}
@@ -197,6 +197,16 @@ dialog.form .mzf label:has(textarea){grid-column:1/-1}
 .jmtab th{background:var(--now);font-weight:700;white-space:nowrap}
 .jmtab tr:first-child td{border-top:0}
 @media (max-width:640px){.jmtab{display:block;overflow-x:auto;white-space:nowrap}}
+/* anggota keluarga di form pendaftaran: 3 kolom, jadi 1 di layar sempit */
+.jagg{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:end;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:12px;margin:0 0 10px}
+.jagg > button{align-self:end;margin-bottom:2px}
+@media (max-width:640px){.jagg{grid-template-columns:1fr}}
+/* statistik publik di Tentang: batang sederhana, tanpa pustaka grafik */
+.jstat{margin:0 0 8px}
+.jbar{display:flex;align-items:center;gap:10px;margin:5px 0}
+.jbar span{flex:0 0 118px;font-size:.9rem}
+.jbar i{height:12px;min-width:3px;border-radius:var(--r-pill);background:var(--sea)}
+.jbar b{margin-left:auto;font-variant-numeric:tabular-nums}
 
 /* ---- Berita / newsletter ---- */
 .rdate{color:var(--muted);font-size:.9rem;margin:0 0 4px}

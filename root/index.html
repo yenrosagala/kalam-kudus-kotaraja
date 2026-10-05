@@ -59,12 +59,18 @@
 <h2>Data Jemaat</h2>
 <p class="note" style="margin-top:0">Hanya terlihat oleh pengelola. Data nama, tanggal lahir, alamat, dan nomor HP tidak ditampilkan kepada pengunjung.</p>
 <div class="jmstat" id="jmStat"></div>
-<div class="dact" style="margin:0 0 14px"><button class="btn" id="jmTpl" type="button">Unduh template Excel</button><button class="btn" id="jmImp" type="button">Impor dari Excel</button></div>
+<div class="dact" style="margin:0 0 14px"><button class="btn" id="jmTpl" type="button">Unduh template Excel</button><button class="btn" id="jmImp" type="button">Impor dari Excel</button><button class="btn" id="jmCsv" type="button">Unduh data (CSV)</button></div>
 <p class="note" style="margin:0 0 10px">Pendaftaran dari form publik. Klik <b>Terima</b> untuk memindahkan orang ke daftar resmi.</p>
 <div id="jmPending"></div>
 <h3>Daftar resmi</h3>
 <div class="kfil"><select id="jmKlg" aria-label="Saring per keluarga"></select><input type="search" id="jmCari" placeholder="Cari nama..." aria-label="Cari emiten"></div>
 <div id="jmList"></div>
+</div>
+<div class="jstat" id="jStatWrap">
+<h2>Jemaat kami</h2>
+<p class="note" style="margin:0 0 12px">Angka diperbarui dari daftar resmi. Data pribadi tidak pernah ditampilkan di sini.</p>
+<div id="jStat"></div>
+<p class="note" id="jStatKosong" hidden>Belum ada data resmi untuk ditampilkan.</p>
 </div>
 </div>
 </div>
@@ -204,9 +210,25 @@
 <div id="imp_out" class="note" role="status" style="margin-top:12px"></div>
 </form>
 
+<form id="dJm" class="mzf" autocomplete="off" hidden>
+<h2>Ubah data jemaat</h2>
+<p class="note" style="margin:0 0 6px">Nomor keluarga tidak diubah dari sini. Mengubah nama tidak memindahkan orang ini ke keluarga lain.</p>
+<label>Nama lengkap<input id="ju_nama" required maxlength="120"></label>
+<label>Nama keluarga<input id="ju_nama_keluarga" maxlength="80"></label>
+<label>Nama kepala keluarga<input id="ju_kepala" maxlength="120"></label>
+<label>Jenis kelamin<select id="ju_jk"><option value="">-</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
+<label>Tanggal lahir<input type="date" id="ju_lahir"></label>
+<label>Daerah<input id="ju_daarah" maxlength="120"></label>
+<label>Alamat<textarea id="ju_alamat" maxlength="400"></textarea></label>
+<label>Nomor HP atau WhatsApp<input id="ju_hp" inputmode="tel" maxlength="40"></label>
+<div class="dact"><button class="btn dk" type="submit">Simpan perubahan</button><button class="sm" type="button" data-x>Batal</button></div>
+<div class="note" id="jumsg" role="status" style="margin:12px 0 0"></div>
+</form>
+
 <form id="fJemaat" class="mzf" autocomplete="off" hidden>
 <h2>Gabung menjadi Jemaat</h2>
 <p class="note" style="margin:0 0 6px">Isi data berikut. Pengelola akan memverifikasi dan memindahkan data ini ke daftar resmi. Jangan mengisi data orang lain.</p>
+<h3 style="margin:0 0 4px">Kepala keluarga</h3>
 <label>Nama lengkap<input id="j_nama" required maxlength="120"></label>
 <label>Nama keluarga<input id="j_nama_keluarga" maxlength="80" placeholder="Contoh: Sagala"></label>
 <label>Orang tua / kepala keluarga<input id="j_kepala" maxlength="120" placeholder="Contoh: Bapak Sagala / Ibu Simbolon"></label>
@@ -215,6 +237,18 @@
 <label>Daerah asal<input id="j_daerah" maxlength="120"></label>
 <label>Alamat<textarea id="j_alamat" rows="2" maxlength="400"></textarea></label>
 <label>Nomor HP atau WhatsApp<input id="j_hp" inputmode="tel" maxlength="40" placeholder="08xx"></label>
+<h3 style="margin:18px 0 4px">Anggota keluarga lain</h3>
+<p class="note" style="margin:0 0 8px">Untuk setiap anggota cukup nama, jenis kelamin, dan tanggal lahir. Alamat dan nomor HP tidak perlu diulang.</p>
+<div id="jAgg"></div>
+<template id="tplAgg">
+<div class="jagg">
+<label>Nama anggota<input class="a_nama" maxlength="120"></label>
+<label>Jenis kelamin<select class="a_jk"><option value="">Pilih...</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
+<label>Tanggal lahir<input type="date" class="a_lahir" max="2026-12-31"></label>
+<button class="sm" type="button" data-x>&minus; Hapus anggota ini</button>
+</div>
+</template>
+<button class="sm" type="button" id="jTambahAgg" style="margin:10px 0 0">+ Tambah anggota</button>
 <div class="dact"><button class="btn dk" type="submit">Kirim pendaftaran</button><button class="sm" type="button" data-x>Batal</button></div>
 <p class="note" id="jmsg" role="alert"></p>
 </form>
