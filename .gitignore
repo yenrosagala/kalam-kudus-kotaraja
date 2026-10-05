@@ -10,6 +10,10 @@ data/backups/
 # Repo ini public. Impor lewat admin page, jangan lewat file ini.
 jadwal ibadah.xlsx
 
+# hasil generate tools/xlsx-ke-sql.js: memuat nama yang sama, jadi sama
+# perlakuan dengan xlsx. Jalankan skripnya lokal, tempel SQL-nya ke Supabase.
+jadwal-import.sql
+
 # secrets
 .env
 .env.*
