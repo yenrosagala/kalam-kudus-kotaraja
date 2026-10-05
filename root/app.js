@@ -104,6 +104,7 @@ function route() {
   if (p === 'berita') loadBerita();
   if (p === 'beritaIsi') bukaBerita(seg[1]);
   if (p === 'jadwal' && seg[1] !== undefined) { FK = decodeURIComponent(seg[1]); if (ROWS.length) renderKomisi(); }
+  if (p === 'tentang') loadTentang();
 }
 
 
@@ -364,6 +365,9 @@ const syncAdmin = async () => {
   $('btnJemaatImp').hidden = !ADMIN;
   $('jmDash').hidden = !ADMIN;
   if (ADMIN) { await Segarkan(); await loadJemaat(); }
+  // Login/logout mengubah siapa yang boleh menyunting: jalankan ulang supaya
+  // atribut contenteditable ikut dipasang atau dilepas.
+  loadTentang();
   renderKomisi();
   await loadMezbah();
   if (BRS.length) renderBerita();
@@ -760,6 +764,59 @@ const loadStatJemaat = async () => {
   }
   kosong.hidden = false;
 };
+// ---- Kalimat statis di Tentang yang bisa disunting admin di tempat ----
+// Satu baris per kunci di tabel teks_tentang (lihat supabase-migration.sql).
+// Menambah kalimat yang bisa disunting = tambah atribut data-tek="..." di
+// index.html saja; tidak ada kolom, endpoint, atau kode baru per kalimat.
+const TEK_MAKS = 800;
+
+// Dua aturan yang tidak boleh dilanggar di bagian ini:
+//  1) Teks dari database SELALU dipasang lewat textContent, tidak pernah
+//     innerHTML. Kalau sekali saja pakai innerHTML, satu `<img onerror>`
+//     yang tersimpan akan dieksekusi untuk setiap pengunjung.
+//  2) onpaste memaksa teks polos, jadi HTML dari clipboard tidak pernah masuk
+//     ke DOM walau peramban tidak mendukung plaintext-only.
+//
+// `pasangTentang` sengaja dipisah dari `loadTentang`: semua keputusan soal
+// hak akses, sanitasi, dan batas panjang ada di satu fungsi pure, jadi bisa
+// diperiksa tanpa browser dan tanpa menyentuh jaringan.
+const pasangTentang = (nodes, isi, admin, simpan) => {
+  for (const el of nodes) {
+    const k = el.dataset.tek;
+    if (typeof isi[k] === 'string') el.textContent = isi[k];
+    if (!admin) { el.removeAttribute('contenteditable'); el.onblur = null; el.onpaste = null; continue; }
+    el.setAttribute('contenteditable', 'plaintext-only');
+    el.title = 'Klik lalu ketik untuk mengubah. Teks tersimpan sendiri.';
+    // onblur/onpaste (bukan addEventListener) supaya panggilan berulang
+    // menimpa handler, bukan menumpuknya.
+    el.onpaste = (ev) => {
+      ev.preventDefault();
+      const t = (ev.clipboardData || window.clipboardData || {}).getData('text/plain') || '';
+      document.execCommand('insertText', false, t.replace(/\s+/g, ' '));
+    };
+    el.onblur = () => {
+      const v = el.textContent.replace(/\s+/g, ' ').trim().slice(0, TEK_MAKS);
+      el.textContent = v; // trim + batas panjang terlihat sama dengan yang tersimpan
+      simpan(k, v);
+    };
+  }
+};
+
+const loadTentang = async () => {
+  let isi = {};
+  try { isi = Object.fromEntries((await sb(db('teks_tentang').select('kunci,isi'))).map(r => [r.kunci, r.isi])); }
+  catch (er) {
+    // Tabel belum ada / offline / RLS belum dijalankan: pakai teks yang
+    // sudah tertanam di index.html supaya halaman tidak pernah kosong.
+  }
+  pasangTentang(document.querySelectorAll('[data-tek]'), isi, ADMIN, async (kunci, isiBaru) => {
+    butuhAdmin();
+    try {
+      await sb(db('teks_tentang').upsert({ kunci, isi: isiBaru, diubah: new Date().toISOString() }, { onConflict: 'kunci' }));
+    } catch (er) { alert('Gagal menyimpan teks: ' + er.message); }
+  });
+};
+
 // ---- Ubah data resmi + unduh CSV ---------------------------------------
 // RLS sudah mengizinkan UPDATE untuk yang login (lihat supabase-migration.sql),
 // jadi ini murni UI: tidak ada tabel, kolom, atau migration baru.

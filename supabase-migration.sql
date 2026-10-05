@@ -319,6 +319,46 @@ FROM public.jemaat;
 GRANT SELECT ON public.jemaat_ringkasan TO anon, authenticated;
 
 -- =====================================================================
+--  10. Teks halaman Tentang: kalimat statis yang disunting admin di tempat
+-- =====================================================================
+-- Satu baris per kunci, bukan satu kolom per kartu. Menambah kalimat yang
+-- bisa disunting cukup menambah atribut data-tek="..." di index.html: tidak
+-- perlu kolom baru, tidak perlu GRANT baru, tidak perlu kode baru.
+--
+-- CREATE TABLE IF NOT EXISTS (bukan DROP+CREATE) supaya isi yang sudah
+-- disunting admin tidak hilang kalau file ini dijalankan ulang.
+CREATE TABLE IF NOT EXISTS public.teks_tentang (
+  kunci  TEXT PRIMARY KEY CHECK (kunci ~ '^[a-z0-9_]{1,40}$'),
+  isi    TEXT NOT NULL DEFAULT '' CHECK (char_length(isi) <= 800),
+  diubah TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE public.teks_tentang ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "publik baca teks"   ON public.teks_tentang;
+DROP POLICY IF EXISTS "admin manages teks" ON public.teks_tentang;
+
+-- Pendatang boleh baca: halaman Tentang memang untuk semua orang, dan
+-- isinya bukan data pribadi.
+CREATE POLICY "publik baca teks" ON public.teks_tentang
+  FOR SELECT TO anon, authenticated USING (true);
+
+-- Tulis hanya admin. Policy ini hanya berlaku untuk role 'authenticated',
+-- jadi PostgREST tanpa sesi login tidak punya izin sama sekali - inilah yang
+-- membuat proteksi tetap ada walau penyerang tahu format request-nya.
+CREATE POLICY "admin manages teks" ON public.teks_tentang
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+GRANT SELECT                         ON public.teks_tentang TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.teks_tentang TO authenticated;
+
+-- CATATAN KEAMANAN: 'authenticated' di sini berarti "punya sesi Supabase
+-- Auth", BUKAN "pengelola gereja". Setiap akun yang berhasil login bisa
+-- menyunting teks ini - sama seperti tabel berita dan jadwal. Kalau suatu saat
+-- web ini punya pendaftaran umum, ganti TO authenticated dengan
+--   USING (auth.uid() = (SELECT id FROM admin_users LIMIT 1))
+-- supaya hanya satu akun yang boleh menulis.
+
+-- =====================================================================
 --  LANGKAH SETELAH MENJALANKAN FILE INI:
 --
 --  1. Rotate password postgres  (sudah kamu paste di chat - WAJIB ganti)
