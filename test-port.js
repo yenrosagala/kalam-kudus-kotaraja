@@ -3,16 +3,21 @@
 // variabel yang perlu dites dikeluarkan lewat globalThis.
 const fs = require('fs'), vm = require('vm'), path = require('path');
 
-const stub = () => new Proxy({}, { get: (t, k) => {
+// Stub元素 stateful supaya innerHTML yang ditulis kode bisa dibaca balik
+// (dipakai renderKomisi -> kartu jadwal). Proxy lama membuang semua set().
+const els = {};
+const getEl = (id) => els[id] || (els[id] = new Proxy({}, { get: (t, k) => {
   if (k === 'value') return '';
   if (k === 'checked' || k === 'hidden') return false;
-  return typeof k === 'string' ? (...a) => stub() : undefined;
-}, set: () => true });
+  if (k === 'innerHTML' || k === 'textContent') return t[k] || '';
+  return typeof k === 'string' ? (...a) => getEl(id) : undefined;
+}, set: (t, k, v) => { t[k] = v; return true; } }));
+const stub = () => getEl('anon');
 
 const ctx = vm.createContext({
   console, Intl, Date, JSON, Map, Set, Object, Array, String, Number, Blob: class {}, URL: { createObjectURL: () => '', revokeObjectURL() {} },
   window: {}, document: {
-    getElementById: stub, querySelectorAll: () => [], createElement: stub,
+    getElementById: getEl, querySelectorAll: () => [], createElement: stub,
     addEventListener() {}, title: '', hidden: false
   },
   location: { hash: '' }, history: { replaceState() {} },
@@ -21,9 +26,12 @@ const ctx = vm.createContext({
 });
 ctx.window = ctx; ctx.self = ctx; ctx.globalThis = ctx;
 ctx.window.scrollTo = () => {};
+ctx.els = els; // probe di dalam vm butuh baca isi klist
 
 const src = fs.readFileSync(path.join(__dirname, 'root', 'app.js'), 'utf8');
-const probe = '\n;globalThis.__t={parseCSV,cleanKomisi,cleanMz,cleanBerita,SPECS,validDate,imgOK,teksShare,alkitabURL,refHTML};';
+// renderKomisi butuh ROWS yang di-isi dari luar, jadi setter-nya ikut diekspor.
+const probe = '\n;globalThis.__t={parseCSV,cleanKomisi,cleanMz,cleanBerita,SPECS,validDate,imgOK,teksShare,alkitabURL,refHTML,' +
+  'renderKomisi,setRows:(v)=>{ROWS=v},klist:()=>els.klist.innerHTML};';
 vm.runInContext(src + probe, ctx, { filename: 'app.js' });
 
 const { parseCSV, cleanKomisi, cleanMz, cleanBerita, SPECS, validDate, imgOK, teksShare, alkitabURL, refHTML } = ctx.__t;
@@ -148,6 +156,19 @@ ok('multi ref isi kedua kitab', decodeURIComponent(u3).includes('Yakobus 1:19-20
 eq('rujukan kosong -> kosong', alkitabURL(''), '');
 eq('bukan rujukan -> search', alkitabURL('Renungan hari ini').includes('search.php'), true);
 
+// Data jadwal pakai DUA gaya pemisah. Koma ambigu: bisa antar bacaan
+// ("Amsal 4:20-27, Amsal 4:23") bisa antar ayat ("16:13-15, 40").
+const uKomaAntar = alkitabURL('Amsal 4:20\u201327, Amsal 4:23');
+ok('koma antar bacaan -> dipisah', decodeURIComponent(uKomaAntar).includes('Amsal 4:20\u201327; Amsal 4:23'));
+ok('koma antar bacaan -> search', uKomaAntar.includes('search.php'));
+const uKomaAyat = alkitabURL('Kisah Para Rasul 16:13\u201315, 40, Yosua 24:15');
+ok('koma dalam ayat dipertahankan', decodeURIComponent(uKomaAyat).includes('16:13\u201315, 40; Yosua 24:15'));
+ok('koma dalam ayat -> search', uKomaAyat.includes('search.php'));
+const uAyatList = alkitabURL('Yohanes 3:16, 18');
+ok('daftar ayat -> bible.php', uAyatList.includes('bible.php'));
+ok('daftar ayat koma utuh', uAyatList.includes('verse=16%2C%2018'));
+ok('daftar ayat pin versi', uAyatList.endsWith('&version=TBS'));
+
 // refHTML: teks tetap terbaca + XSS aman di atribut href
 const h1 = refHTML('Matius 4:18-22');
 ok('refHTML punya anchor', h1.startsWith('<a '));
@@ -163,6 +184,29 @@ ok('XSS quote jadi &quot;', h2.includes('&quot;'));
 const href = (h2.match(/href="([^"]*)"/) || [])[1] || '';
 ok('href ter-encode penuh', !/["'<>]/.test(href) && !href.includes(' '));
 ok('href tetap ke domain SABDA', href.startsWith('https://alkitab.sabda.org/'));
+
+// Kartu jadwal: kolom "Teks" harus jadi link Alkitab TBS, bukan teks mati.
+// Diuji lewat renderKomisi sungguhan, bukan cek string di source.
+const { renderKomisi, setRows, klist } = ctx.__t;
+const BARIS = (teks) => ({ id: 1, tanggal: '2026-11-08', tipe: 'KU', komisi: 'KU', judul: 'Kebaktian', teks,
+  nats_pembimbing: '', pelayan_firman: '', liturgis: '', tuan_rumah: '', tempat: '', waktu: '',
+  status: '', tujuan: '' });
+setRows([BARIS('Efesus 5:15–17')]);
+renderKomisi();
+const kHtml = klist();
+ok('jadwal: teks jadi link', /<div>Teks: <b><a class="ref"/.test(kHtml));
+ok('jadwal: link pin versi TBS', /class="ref" href="[^"]*version=TBS"/.test(kHtml));
+ok('jadwal: en-dash jadi minus', kHtml.includes('verse=15-17'));
+// Kolom kosong tidak boleh bikin <a> kosong yang menjebak reader.
+setRows([BARIS('')]);
+renderKomisi();
+ok('jadwal: teks kosong tanpa link', !klist().includes('class="ref"'));
+
+// 1 Tawarikh 22:5-10 punya angka di depan kitab: cek alkitabURL-nya langsung.
+const uNum = alkitabURL('1 Tawarikh 22:5–10');
+ok('kitab berangka -> book=1 Tawarikh', uNum.includes('book=1%20Tawarikh'));
+ok('kitab berangka -> chapter=22', uNum.includes('chapter=22'));
+ok('kitab berangka pin versi TBS', uNum.endsWith('&version=TBS'));
 
 console.log('\n' + (bad ? 'GAGAL ' + bad + '/' : 'lulus ') + n + ' pemeriksaan');
 process.exit(bad ? 1 : 0);

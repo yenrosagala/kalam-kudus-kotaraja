@@ -76,7 +76,7 @@ function renderKomisi() {
     out += `<article class="kitem${r.id === nextId ? ' next' : ''}${r.status === 'SELESAI' ? ' done' : ''}">
       <div class="kdate"><b>${t.d}</b><span>${t.wd}</span></div>
       <div><span class="badge">${esc(r.komisi)}</span>${r.status === 'BATAL' ? '<span class="badge x">Batal</span>' : ''}${r.id === nextId ? '<span class="tag">Berikutnya</span>' : ''}
-      <h3>${esc(r.judul)}</h3>${r.teks ? `<div>Teks: <b>${esc(r.teks)}</b></div>` : ''}${r.nats_pembimbing ? `<div>Nats Pembimbing: ${esc(r.nats_pembimbing)}</div>` : ''}
+      <h3>${esc(r.judul)}</h3>${r.teks ? `<div>Teks: <b>${refHTML(r.teks)}</b></div>` : ''}${r.nats_pembimbing ? `<div>Nats Pembimbing: ${esc(r.nats_pembimbing)}</div>` : ''}
       ${r.tujuan ? `<p class="pre">${esc(r.tujuan)}</p>` : ''}${meta ? `<div class="kmeta">${meta}</div>` : ''}
       ${ADMIN ? `<div class="dact"><button class="sm" type="button" data-ubah="${r.id}">Ubah jadwal</button></div>` : ''}</div></article>`;
   });
@@ -117,7 +117,11 @@ const SABDA = 'https://alkitab.sabda.org/';
 // SABDA ganti terjemahan default.
 const VER = '&version=TBS';
 function alkitabURL(ref) {
-  const parts = String(ref || '').split(';').map(s => s.trim()).filter(Boolean);
+  // Pemisah bacaan: ";" selalu, "," hanya kalau diikuti kitab+pasal baru.
+  // Jadi "Kisah Para Rasul 16:13-15, 40" tetap satu bacaan (koma di dalam
+  // daftar ayat), tapi "Amsal 4:20-27, Amsal 4:23" jadi dua bacaan.
+  const parts = String(ref || '')
+    .split(/\s*;\s*|\s*,\s*(?=[^,;]*?\s*\d+:\d)/).map(s => s.trim()).filter(Boolean);
   if (!parts.length) return '';
   const refs = parts.map(s => s.match(/^(.+?)\s+(\d+):([\d\s,\-–]+)$/));
   if (refs.some(r => !r)) return SABDA + 'search.php?search=' + encodeURIComponent(String(ref).trim()) + VER;
