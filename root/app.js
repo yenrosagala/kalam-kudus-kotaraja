@@ -130,10 +130,16 @@ function alkitabURL(ref) {
   }
   return SABDA + 'search.php?search=' + encodeURIComponent(parts.join('; ')) + VER;
 }
-// Tautan bacaan: teks tetap tampil, jadi riwayat tetap terbaca walau link mati.
+// Tautan bacaan: tiap bacaan yang pisah ";" jadi link sendiri, bukan satu
+// search.php gabungan — jadi "Amsal 4:20-27; Amsal 4:23" bisa diklik per ayat.
+// Teks tetap tampil, jadi riwayat tetap terbaca walau link mati.
 const refHTML = (ref) => {
-  const u = alkitabURL(ref);
-  return u ? `<a class="ref" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(ref)}</a>` : esc(ref);
+  const parts = String(ref || '').split(';').map(s => s.trim()).filter(Boolean);
+  if (!parts.length) return esc(ref);
+  return parts.map(p => {
+    const u = alkitabURL(p);
+    return u ? `<a class="ref" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(p)}</a>` : esc(p);
+  }).join(' ');
 };
 
 // Teks share: field yang sama dengan isi dialog, urutan sama. Dipakai

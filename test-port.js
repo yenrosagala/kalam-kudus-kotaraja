@@ -167,6 +167,19 @@ ok('daftar ayat pin versi', uAyatList.endsWith('&version=TBS'));
 ok('kitab+ayat nempel -> search', alkitabURL('1 Tesalonika 4:3\u20138, 1 Korintus 6:20').includes('search.php'));
 ok('kitab+ayat nempel -> search', alkitabURL('Kisah Para Rasul 16:13\u201315, 40, Yosua 24:15').includes('search.php'));
 
+// Tiap bacaan yang pisah ";" jadi link sendiri, bukan satu search.php gabungan.
+const hMulti = refHTML('1 Korintus 6:18\u201320; Amsal 4:20\u201327; Amsal 4:23');
+ok('multi: tiga link terpisah', (hMulti.match(/<a /g) || []).length === 3);
+ok('multi: tiap link bible.php', (hMulti.match(/bible\.php/g) || []).length === 3);
+ok('multi: tiap link pin TBS', (hMulti.match(/version=TBS/g) || []).length === 3);
+ok('multi:(search.php tak dipakai', !hMulti.includes('search.php'));
+ok('multi: ayat 1 benar', hMulti.includes('book=1%20Korintus&amp;chapter=6&amp;verse=18-20'));
+ok('multi: ayat 2 benar', hMulti.includes('book=Amsal&amp;chapter=4&amp;verse=20-27'));
+ok('multi: ayat 3 benar', hMulti.includes('book=Amsal&amp;chapter=4&amp;verse=23'));
+ok('multi: teks tetap tampil', ['1 Korintus 6:18\u201320', 'Amsal 4:20\u201327', 'Amsal 4:23']
+  .every(t => decodeURIComponent(hMulti).includes(t)));
+ok('single tetap satu link', (refHTML('Matius 4:18-22').match(/<a /g) || []).length === 1);
+
 // refHTML: teks tetap terbaca + XSS aman di atribut href
 const h1 = refHTML('Matius 4:18-22');
 ok('refHTML punya anchor', h1.startsWith('<a '));
