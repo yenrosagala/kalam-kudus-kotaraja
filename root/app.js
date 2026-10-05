@@ -108,6 +108,29 @@ function route() {
 const fmtTgl = (t) => new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(t + 'T00:00:00Z'));
 const block = (label, v) => v ? `<h3 class="lbl">${label}</h3><p class="pre">${esc(v)}</p>` : '';
 
+// Rujukan "Matius 4:18-22" -> link Alkitab SABDA (Terjemahan Baru).
+// Satu rujukan pakai bible.php (tepat ke ayat). Rujukan majemuk
+// "Matius 5:38-48; Yakobus 1:19-20" pakai search.php karena SABDA
+// hanya menerima satu kitab/pasal per permintaan.
+const SABDA = 'https://alkitab.sabda.org/';
+function alkitabURL(ref) {
+  const parts = String(ref || '').split(';').map(s => s.trim()).filter(Boolean);
+  if (!parts.length) return '';
+  const refs = parts.map(s => s.match(/^(.+?)\s+(\d+):([\d\s,\-–]+)$/));
+  if (refs.some(r => !r)) return SABDA + 'search.php?search=' + encodeURIComponent(String(ref).trim());
+  if (refs.length === 1) {
+    const [, kitab, pasal, ayat] = refs[0];
+    return SABDA + 'bible.php?book=' + encodeURIComponent(kitab) +
+      '&chapter=' + pasal + '&verse=' + encodeURIComponent(ayat.replace(/\s*[–—]\s*/g, '-'));
+  }
+  return SABDA + 'search.php?search=' + encodeURIComponent(parts.join('; '));
+}
+// Tautan bacaan: teks tetap tampil, jadi riwayat tetap terbaca walau link mati.
+const refHTML = (ref) => {
+  const u = alkitabURL(ref);
+  return u ? `<a class="ref" href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(ref)}</a>` : esc(ref);
+};
+
 // Teks share: field yang sama dengan isi dialog, urutan sama. Dipakai
 // bukaBaca() untuk isi tombol WhatsApp.
 function teksShare(m) {
@@ -140,7 +163,7 @@ function bukaBaca(src) {
     $('bJudul').textContent = m.judul || '-';
     $('bTema').textContent = m.tema ? 'Tema Mingguan: ' + m.tema : '';
     $('bIsi').innerHTML =
-      (m.bacaan || m.ayat ? `<div class="two">${m.bacaan ? `<div class="card"><h3>Bacaan Alkitab</h3><p>${esc(m.bacaan)}</p></div>` : ''}${m.ayat ? `<div class="card"><h3>Ayat Kunci</h3><p>${esc(m.ayat)}</p></div>` : ''}</div>` : '') +
+      (m.bacaan || m.ayat ? `<div class="two">${m.bacaan ? `<div class="card"><h3>Bacaan Alkitab</h3><p>${refHTML(m.bacaan)}</p></div>` : ''}${m.ayat ? `<div class="card"><h3>Ayat Kunci</h3><p>${refHTML(m.ayat)}</p></div>` : ''}</div>` : '') +
       block('Renungan', m.renungan) + block('Pesan Hari Ini', m.pesan) + block('Refleksi Keluarga', m.refleksi) +
       ((m.doa_gkkk || m.doa_misi) ? `<h3 class="lbl">Pokok Doa</h3>${m.doa_gkkk ? `<p class="sub">Keluarga Besar GKKK</p><p class="pre">${esc(m.doa_gkkk)}</p>` : ''}${m.doa_misi ? `<p class="sub">Misi</p><p class="pre">${esc(m.doa_misi)}</p>` : ''}` : '') +
       block('Doa Penutup', m.doa_penutup);
@@ -172,7 +195,7 @@ async function loadToday() {
     MZTODAY = m;
     c.innerHTML = `<p class="rdate">${fmtTgl(m.tanggal)}</p><p class="tjudul">${esc(m.judul || 'Renungan')}</p>` +
       (m.tema ? `<p class="theme">Tema Mingguan: ${esc(m.tema)}</p>` : '') +
-      (m.bacaan ? `<p class="note">Bacaan: ${esc(m.bacaan)}</p>` : '') +
+      (m.bacaan ? `<p class="note">Bacaan: ${refHTML(m.bacaan)}</p>` : '') +
       `<p style="margin:10px 0 0"><button class="sm" type="button" id="btnToday">Lihat renungan</button></p>`;
   } catch { c.innerHTML = '<p class="note">Belum ada renungan. <a href="#/mezbah"><b>Mulai di sini</b></a></p>'; }
 }
@@ -187,7 +210,7 @@ async function loadMezbah(buka) {
 <p class="rdate">${fmtTgl(x.tanggal)}</p>
 <h3>${esc(x.judul || 'Renungan')}</h3>
 ${x.tema ? `<p class="theme">Tema Mingguan: ${esc(x.tema)}</p>` : ''}
-${(x.bacaan || x.ayat) ? `<div class="mmeta">${x.bacaan ? `<p><b>Bacaan Alkitab</b>${esc(x.bacaan)}</p>` : ''}${x.ayat ? `<p><b>Ayat Kunci</b>${esc(x.ayat)}</p>` : ''}</div>` : ''}
+${(x.bacaan || x.ayat) ? `<div class="mmeta">${x.bacaan ? `<p><b>Bacaan Alkitab</b>${refHTML(x.bacaan)}</p>` : ''}${x.ayat ? `<p><b>Ayat Kunci</b>${refHTML(x.ayat)}</p>` : ''}</div>` : ''}
 </div><div class="dact">${ADMIN ? `<button class="sm" type="button" data-ubah="${esc(x.tanggal)}">Ubah renungan</button>` : ''}<button class="sm" type="button" data-mz="${esc(x.tanggal)}">Lihat Renungan</button></div></article>`).join('')
       : '<p class="note">Belum ada renungan.</p>';
     if (buka) bukaBaca(buka);

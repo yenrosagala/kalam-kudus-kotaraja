@@ -23,10 +23,10 @@ ctx.window = ctx; ctx.self = ctx; ctx.globalThis = ctx;
 ctx.window.scrollTo = () => {};
 
 const src = fs.readFileSync(path.join(__dirname, 'root', 'app.js'), 'utf8');
-const probe = '\n;globalThis.__t={parseCSV,cleanKomisi,cleanMz,cleanBerita,SPECS,validDate,imgOK,teksShare};';
+const probe = '\n;globalThis.__t={parseCSV,cleanKomisi,cleanMz,cleanBerita,SPECS,validDate,imgOK,teksShare,alkitabURL,refHTML};';
 vm.runInContext(src + probe, ctx, { filename: 'app.js' });
 
-const { parseCSV, cleanKomisi, cleanMz, cleanBerita, SPECS, validDate, imgOK, teksShare } = ctx.__t;
+const { parseCSV, cleanKomisi, cleanMz, cleanBerita, SPECS, validDate, imgOK, teksShare, alkitabURL, refHTML } = ctx.__t;
 let n = 0, bad = 0;
 const ok = (name, cond) => { n++; if (!cond) { bad++; console.log('  GAGAL: ' + name); } };
 const eq = (name, got, want) => ok(name + ' (dapat ' + JSON.stringify(got) + ', harus ' + JSON.stringify(want) + ')', JSON.stringify(got) === JSON.stringify(want));
@@ -123,6 +123,42 @@ ok('share berisi doa penutup', sh.includes('Amein'));
 const shTipis = teksShare({ tanggal: '2026-11-08', judul: '', renungan: 'R' });
 ok('share entri minim bersih', shTipis.includes('R') && !/undefined|\bnull\b/.test(shTipis) && !/\n\n\n/.test(shTipis));
 ok('share entri minim tak kosong', shTipis.trim().length > 0);
+
+// alkitabURL: rujukan -> URL Alkitab SABDA.
+const u1 = alkitabURL('Matius 4:18-22');
+ok('single ref pakai bible.php', u1.startsWith('https://alkitab.sabda.org/bible.php?'));
+ok('single ref bawa kitab', u1.includes('book=Matius'));
+ok('single ref bawa pasal', u1.includes('chapter=4'));
+ok('single ref bawa ayat', u1.includes('verse=18-22'));
+// kitab bernomor: spasi harus ter-encode, tidak boleh bocor ke query string
+const u2 = alkitabURL('1 Korintus 15:57-58');
+ok('kitab bernomor ter-encode', u2.includes('book=1%20Korintus') || u2.includes('book=1+Korintus'));
+ok('kitab bernomor tak bocor &', !/book=1 Korintus/.test(u2));
+// tanda hubung panjang (–) dari Excel harus jadi '-' ASCII
+ok('en-dash dinormalkan', alkitabURL('Yohanes 3:16–18').includes('verse=16-18'));
+// rujukan majemuk -> search.php, karena SABDA cuma terima satu kitab per permintaan
+const u3 = alkitabURL('Matius 5:38-48; Yakobus 1:19-20');
+ok('multi ref pakai search.php', u3.includes('search.php?search='));
+ok('multi ref isi kedua kitab', decodeURIComponent(u3).includes('Yakobus 1:19-20'));
+// input rusak: jangan bikin URL ngawur
+eq('rujukan kosong -> kosong', alkitabURL(''), '');
+eq('bukan rujukan -> search', alkitabURL('Renungan hari ini').includes('search.php'), true);
+
+// refHTML: teks tetap terbaca + XSS aman di atribut href
+const h1 = refHTML('Matius 4:18-22');
+ok('refHTML punya anchor', h1.startsWith('<a '));
+ok('refHTML teks tetap tampil', h1.includes('Matius 4:18-22'));
+ok('refHTML target blank', h1.includes('target="_blank"'));
+ok('refHTML rel aman', h1.includes('rel="noopener noreferrer"'));
+// Reflected XSS: crafted ref harus jadi entity, bukan quote mentah
+const h2 = refHTML('Matius 4:18-22" onmouseover="alert(1)');
+ok('XSS quote di-escape', !h2.includes('onmouseover="alert'));
+ok('XSS quote jadi &quot;', h2.includes('&quot;'));
+// nilai href harus ter-encode penuh: tidak ada quote/space mentahan yang
+// bisa menutup atribut dan menyuntik handler baru.
+const href = (h2.match(/href="([^"]*)"/) || [])[1] || '';
+ok('href ter-encode penuh', !/["'<>]/.test(href) && !href.includes(' '));
+ok('href tetap ke domain SABDA', href.startsWith('https://alkitab.sabda.org/'));
 
 console.log('\n' + (bad ? 'GAGAL ' + bad + '/' : 'lulus ') + n + ' pemeriksaan');
 process.exit(bad ? 1 : 0);
