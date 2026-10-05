@@ -113,17 +113,20 @@ const block = (label, v) => v ? `<h3 class="lbl">${label}</h3><p class="pre">${e
 // "Matius 5:38-48; Yakobus 1:19-20" pakai search.php karena SABDA
 // hanya menerima satu kitab/pasal per permintaan.
 const SABDA = 'https://alkitab.sabda.org/';
+// Terjemahan Baru Sadarini (TBS). Eksplisit agar tidak ikut berubah kalau
+// SABDA ganti terjemahan default.
+const VER = '&version=TBS';
 function alkitabURL(ref) {
   const parts = String(ref || '').split(';').map(s => s.trim()).filter(Boolean);
   if (!parts.length) return '';
   const refs = parts.map(s => s.match(/^(.+?)\s+(\d+):([\d\s,\-–]+)$/));
-  if (refs.some(r => !r)) return SABDA + 'search.php?search=' + encodeURIComponent(String(ref).trim());
+  if (refs.some(r => !r)) return SABDA + 'search.php?search=' + encodeURIComponent(String(ref).trim()) + VER;
   if (refs.length === 1) {
     const [, kitab, pasal, ayat] = refs[0];
     return SABDA + 'bible.php?book=' + encodeURIComponent(kitab) +
-      '&chapter=' + pasal + '&verse=' + encodeURIComponent(ayat.replace(/\s*[–—]\s*/g, '-'));
+      '&chapter=' + pasal + '&verse=' + encodeURIComponent(ayat.replace(/\s*[–—]\s*/g, '-')) + VER;
   }
-  return SABDA + 'search.php?search=' + encodeURIComponent(parts.join('; '));
+  return SABDA + 'search.php?search=' + encodeURIComponent(parts.join('; ')) + VER;
 }
 // Tautan bacaan: teks tetap tampil, jadi riwayat tetap terbaca walau link mati.
 const refHTML = (ref) => {

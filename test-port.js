@@ -130,6 +130,10 @@ ok('single ref pakai bible.php', u1.startsWith('https://alkitab.sabda.org/bible.
 ok('single ref bawa kitab', u1.includes('book=Matius'));
 ok('single ref bawa pasal', u1.includes('chapter=4'));
 ok('single ref bawa ayat', u1.includes('verse=18-22'));
+ok('single ref pin versi TBS', u1.endsWith('&version=TBS'));
+// TBS wajib ada di SEMUA jenis link, termasuk multi-pasal dan input rusak.
+ok('multi ref pin versi TBS', alkitabURL('Matius 5:38-48; Yakobus 1:19-20').endsWith('&version=TBS'));
+ok('input rusak tetap pin versi', alkitabURL('Renungan hari ini').endsWith('&version=TBS'));
 // kitab bernomor: spasi harus ter-encode, tidak boleh bocor ke query string
 const u2 = alkitabURL('1 Korintus 15:57-58');
 ok('kitab bernomor ter-encode', u2.includes('book=1%20Korintus') || u2.includes('book=1+Korintus'));
