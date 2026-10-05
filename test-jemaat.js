@@ -128,5 +128,27 @@ if (hilang.length) console.log('    id hilang: ' + hilang.join(', '));
 ['btnDaftar', 'btnJemaatImp', 'fJemaat', 'jmDash', 'jmStat', 'jmPending', 'jmList', 'jmKlg', 'jmCari', 'jmTpl', 'jmImp']
   .forEach(id => ok('id baru ada: ' + id, ids.has(id)));
 
+// Cek struktur, bukan cuma keberadaan id. .page{display:none} di style.css, dan
+// route() di app.js menyalakan tepat satu .page lewat kelas .on. Kalau ada satu
+// .page-nya tidak tertutup div di dalam .page lain, halaman setelahnya ikut hilang:
+// display:none pada leluhur menyembunyikan seluruh turunannya, walau .page
+// yang nyala itu sendiri display:block. Gejalanya menyesatkan: data masih
+// utuh di database tapi halamannya kosong.
+const depths = [];
+let d = 0;
+for (const baris of html.split('\n')) {
+  const sebelum = d;
+  d += (baris.match(/<div\b/g) || []).length - (baris.match(/<\/div>/g) || []).length;
+  const m = baris.match(/<div class="page" id="(\w+)"/);
+  if (m) depths.push([m[1], sebelum]);
+}
+ok('se semua tag <div> tertutup seimbang', d === 0);
+ok('tidak ada <div>.pagesatu <div class="page"', depths.length > 0);
+ok('setiap .page adalah anak langsung (depth 0)',
+  depths.every(([, dd]) => dd === 0));
+if (depths.some(([, dd]) => dd !== 0)) {
+  console.log('    page terdalam: ' + depths.filter(([, dd]) => dd !== 0).map(([n2, dd]) => n2 + '@' + dd).join(', '));
+}
+
 console.log('\n' + (bad ? 'GAGAL ' + bad + '/' : 'lulus ') + n + ' pemeriksaan');
 process.exit(bad ? 1 : 0);
