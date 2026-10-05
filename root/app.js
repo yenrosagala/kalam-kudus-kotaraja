@@ -38,7 +38,7 @@ let EDIT = { id: null, tgl: null };
 const KNAMA = { KU: 'Kebaktian Umum', PW: 'Persekutuan Wanita', PKP: 'Persekutuan Kaum Pria' };
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 const tgl = (t) => { const [y, m, d] = t.split('-'); return { y: +y, m: +m - 1, d: +d, wd: new Intl.DateTimeFormat('id-ID', { weekday: 'long', timeZone: 'UTC' }).format(new Date(t + 'T00:00:00Z')) }; };
-// 'YYYYMMDDhhmm' in church time (Asia/Jayapura) - date-only compare misses same-day services already past
+// 'YYYYMMDDhhmm' in WIT (Asia/Jayapura) - date-only compare misses same-day services already past
 const nowWIT = () => {
   const p = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jayapura', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date());
   const g = Object.fromEntries(p.map(x => [x.type, x.value]));
@@ -108,12 +108,34 @@ function route() {
 const fmtTgl = (t) => new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(t + 'T00:00:00Z'));
 const block = (label, v) => v ? `<h3 class="lbl">${label}</h3><p class="pre">${esc(v)}</p>` : '';
 
+// Teks share: field yang sama dengan isi dialog, urutan sama. Dipakai
+// bukaBaca() untuk isi tombol WhatsApp.
+function teksShare(m) {
+  const bagian = [
+    '*Renungan ' + fmtTgl(m.tanggal) + '*',
+    m.judul || '',
+    m.tema ? 'Tema: ' + m.tema : '',
+    m.bacaan ? 'Bacaan: ' + m.bacaan : '',
+    m.ayat ? 'Ayat kunci: ' + m.ayat : '',
+    m.renungan ? 'Renungan:\n' + m.renungan : '',
+    m.pesan ? 'Pesan hari ini:\n' + m.pesan : '',
+    m.refleksi ? 'Refleksi:\n' + m.refleksi : '',
+    m.doa_gkkk ? 'Pokok doa - Keluarga Besar GKKK:\n' + m.doa_gkkk : '',
+    m.doa_misi ? 'Pokok doa - Misi:\n' + m.doa_misi : '',
+    m.doa_penutup ? m.doa_penutup : '',
+  ];
+  return bagian.filter(s => s && s.trim()).join('\n\n');
+}
+
+let MZBACA = null; // entri yang lagi dibuka di dBaca; dipakai tombol share
+
 function bukaBaca(src) {
   const got = typeof src === 'string'
     ? qMzSatu(src).catch(() => null)
     : Promise.resolve(src);
   got.then(m => {
     if (!m) return;
+    MZBACA = m; // buat tombol share di dBaca
     $('bTgl').textContent = fmtTgl(m.tanggal);
     $('bJudul').textContent = m.judul || '-';
     $('bTema').textContent = m.tema ? 'Tema Mingguan: ' + m.tema : '';
@@ -130,6 +152,14 @@ function bukaBaca(src) {
 $('mz').addEventListener('click', e => {
   if (e.target.dataset.ubah) return editMz(e.target.dataset.ubah);
   const t = e.target.dataset.mz; if (t) bukaBaca(t);
+});
+// wa.me dipakai, bukan api.whatsapp.com: itu host resmi, tanpa endpoint
+// API, dan menerima teks yang sama lewat ?text=. Nomor tujuan tidak diisi, jadi
+// pengguna sendiri yang memilih kontak di WhatsApp.
+// jadi pengguna yang memilih kontak di WhatsApp.
+$('waShare').addEventListener('click', () => {
+  if (!MZBACA) return;
+  window.open('https://wa.me/?text=' + encodeURIComponent(teksShare(MZBACA)), '_blank', 'noopener');
 });
 $('klist').addEventListener('click', e => { const id = e.target.dataset.ubah; if (id) editK(id); });
 

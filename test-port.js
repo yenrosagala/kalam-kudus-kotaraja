@@ -23,10 +23,10 @@ ctx.window = ctx; ctx.self = ctx; ctx.globalThis = ctx;
 ctx.window.scrollTo = () => {};
 
 const src = fs.readFileSync(path.join(__dirname, 'root', 'app.js'), 'utf8');
-const probe = '\n;globalThis.__t={parseCSV,cleanKomisi,cleanMz,cleanBerita,SPECS,validDate,imgOK};';
+const probe = '\n;globalThis.__t={parseCSV,cleanKomisi,cleanMz,cleanBerita,SPECS,validDate,imgOK,teksShare};';
 vm.runInContext(src + probe, ctx, { filename: 'app.js' });
 
-const { parseCSV, cleanKomisi, cleanMz, cleanBerita, SPECS, validDate, imgOK } = ctx.__t;
+const { parseCSV, cleanKomisi, cleanMz, cleanBerita, SPECS, validDate, imgOK, teksShare } = ctx.__t;
 let n = 0, bad = 0;
 const ok = (name, cond) => { n++; if (!cond) { bad++; console.log('  GAGAL: ' + name); } };
 const eq = (name, got, want) => ok(name + ' (dapat ' + JSON.stringify(got) + ', harus ' + JSON.stringify(want) + ')', JSON.stringify(got) === JSON.stringify(want));
@@ -102,6 +102,27 @@ eq('kunci mezbah tanggal saja', SPECS.mezbah.kunci({ tanggal: '2026-10-11', komi
 const list = [1, 2, 3, 4].map((t) => ({ tanggal: '2026-10-1' + (t % 2), komisi: 'PW' }));
 const unik = new Map(); list.forEach(r => unik.set(SPECS.jadwal.kunci(r), r));
 eq('kunci kembar di-dedup jadi 2', unik.size, 2);
+
+// teksShare: isi pesan WhatsApp. Yang wajib: tidak ada "undefined"/"null",
+// field kosong tidak muncul, dan isi minimal (tanggal + judul) tetap utuh.
+const mzPenuh = {
+  tanggal: '2026-11-08', judul: 'Siap Berkarya', tema: 'Panggilan',
+  bacaan: 'Matius 5:1-12', ayat: 'Matius 5:2', renungan: 'Tuhan memanggil.',
+  pesan: 'Bertumbuh dalam kasih.', refleksi: 'Praktikkan hari ini.',
+  doa_gkkk: 'Kesehatan Papa', doa_misi: 'Gereja bertumbuh', doa_penutup: 'Amein'
+};
+const sh = teksShare(mzPenuh);
+ok('share tidak bocor undefined', !/undefined/.test(sh));
+ok('share tidak bocor null', !/\bnull\b/.test(sh));
+ok('share tak punya blankdoouble', !/\n\n\n/.test(sh));
+ok('share berisi tanggal', sh.includes('2026') && sh.includes('November') || sh.includes('11'));
+ok('share berisi judul', sh.includes('Siap Berkarya'));
+ok('share berisi bacaan', sh.includes('Matius 5:1-12'));
+ok('share berisi doa penutup', sh.includes('Amein'));
+// entri minim: banyak field kosong, tidak boleh jadi baris "undefined"
+const shTipis = teksShare({ tanggal: '2026-11-08', judul: '', renungan: 'R' });
+ok('share entri minim bersih', shTipis.includes('R') && !/undefined|\bnull\b/.test(shTipis) && !/\n\n\n/.test(shTipis));
+ok('share entri minim tak kosong', shTipis.trim().length > 0);
 
 console.log('\n' + (bad ? 'GAGAL ' + bad + '/' : 'lulus ') + n + ' pemeriksaan');
 process.exit(bad ? 1 : 0);
