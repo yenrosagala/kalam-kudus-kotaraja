@@ -26,8 +26,12 @@ supaya salah tempel tidak diam-diam jadi lubang besar.
 
 1. **Buat project** di [supabase.com](https://supabase.com).
 2. **Jalankan `supabase-migration.sql`** di Dashboard → SQL Editor → New query.
-   Membuat 5 tabel (`jadwal_komisi`, `mezbah`, `berita`, `jemaat`, `jemaat_daftar`),
-   1 view ringkasan, index, batas panjang kolom, mengaktifkan **RLS**, dan memberi GRANT.
+   Membuat 6 tabel (`jadwal_komisi`, `mezbah`, `berita`, `jemaat`, `jemaat_daftar`,
+   `teks_tentang`), 1 view ringkasan, index, mengaktifkan **RLS**, dan memberi GRANT.
+   Semua kolom teks bertipe `text`, jadi Postgres sendiri tidak membatasi
+   panjangnya. Batasnya datang dari CHECK `char_length` per kolom: mulai 40
+   (`jadwal_komisi.komisi`) sampai 20000 (`berita.isi`); `teks_tentang.isi`
+   dibatasi 800 supaya kalimat yang bisa disunting admin tidak jadi dokumen.
 3. **Jalankan `supabase-seed.sql`** di SQL Editor juga, supaya situs tidak kosong
    saat pertama kali online: jadwal, data mezbah, dan beberapa berita contoh.
 4. **Buat user admin**: Dashboard → Authentication → Users → Add user.

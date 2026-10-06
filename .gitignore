@@ -6,17 +6,14 @@ node_modules/
 data/*.sqlite*
 data/backups/
 
-# sumber data.import berisi ~180 nama asli parishioner/pastor.
-# Repo ini public. Impor lewat admin page, jangan lewat file ini.
-jadwal ibadah.xlsx
-Tabel informasi jemaat.xlsx
+# sumber data: workbook apa pun bisa memuat ~180 nama asli parishioner/pastor.
+# Repo ini public. Impor lewat admin page atau tempel SQL, jangan lewat file ini.
+# Pola umum (bukan daftar nama file) supaya workbook baru otomatis ikut aman.
+*.xlsx
 
-# lock file Excel:~$... muncul kalau workbook masih dibuka di Excel
-~$*.xlsx
-
-# hasil konversi workbook jadwal -> SQL: memuat nama yang sama, jadi sama
+# hasil konversi workbook -> SQL: memuat nama yang sama, jadi sama
 # perlakuan dengan xlsx. Jangan pernah di-commit; tempel ke Supabase lalu hapus.
-jadwal-import.sql
+*-import.sql
 
 # secrets
 .env
