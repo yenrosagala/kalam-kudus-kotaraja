@@ -94,11 +94,27 @@ Supabase dashboard.
 - **Impor CSV** lewat halaman admin: tombol "Unduh template CSV" menghasilkan
   berkas dari browser (tidak perlu server). Baris yang gagal dilaporkan per nomor
   baris tanpa membatalkan baris lain.
+- **Impor Jemaat** mengikuti aturan worksheet, bukan mengira-ira:
+  - nomor keluarga berjalan mengikuti urutan sheet — Waena 1–19, Kotaraja
+    20–47, Tanah di Hitam 48–59, Holtekam dan Koya 60–64, Jayapura 65–67,
+    Sentani 68–70. Nomor berikutnya setelah impor **71**;
+  - nomor itu **angka polos**, bukan teks — `app.js` menjumlahkannya
+    (`+r.no_keluarga`) untuk membuat nomor pendaftar baru, jadi format seperti
+    `W-01` akan merusak penghitungan;
+  - `daerah` diambil dari nama sheet setelah awalan `Jemaat di ` dibuang;
+  - `nama_keluarga` = kata terakhir nama kepala keluarga; alamat yang kosong
+    mewarisi baris sebelumnya dalam keluarga yang sama.
+- **Tanggal lahir** diisi hanya kalau workbook memang punya tahun dan formatnya
+  jelas (204 nama: 155 terisi, 49 dikosongkan). Tahun tidak pernah ditebak.
+- **Kerinduan pelayanan** (`jemaat.pelayanan`, 11 nilai) diseragamkan — workbook
+  memakai dua ejaan, keduanya jadi `Singer`. Kolom `jk` dan `kepala` sengaja
+  dibiarkan kosong karena tidak ada di workbook, bukan bug.
 - **Renungan "hari ini"** bertingkat: tanggal hari ini → renungan terakhir pada
   atau sebelum hari ini → renungan terbaru. Tanggal pakai zona waktu
   `Asia/Jayapura` (WIT).
-- Workbook sumber berisi ~180 nama parishioner/pastor asli, jadi **tidak** ikut
-  di-commit (lihat `.gitignore`). Impor lewat halaman admin, bukan lewat git.
+- Workbook sumber `DATA JEMAAT` berisi **204 nama dari 70 keluarga** di 6
+  wilayah, jadi **tidak** ikut di-commit (lihat `.gitignore`). Impor lewat
+  halaman admin, bukan lewat git.
 - Repo ini **tidak** membawa test otomatis. Verifikasi sebelum deploy: buka
   `root/index.html` lewat server statis, cek tiap halaman lewat hash routing,
   dan cek `node --check root/app.js` kalau kamu menyunting `app.js`.

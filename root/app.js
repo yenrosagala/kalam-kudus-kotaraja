@@ -514,7 +514,7 @@ function cleanKomisi(b) {
   r.status = ['TERJADWAL', 'SELESAI', 'BATAL'].includes(b.status) ? b.status : 'TERJADWAL';
   return r;
 }
-const JFLEN = { no_keluarga: 20, nama_keluarga: 80, nama: 120, kepala: 120, daerah: 120, alamat: 400, hp: 40 };
+const JFLEN = { no_keluarga: 20, nama_keluarga: 80, nama: 120, kepala: 120, pelayanan: 120, daerah: 120, alamat: 400, hp: 40 };
 // Satu validator dipakai dua tempat: impor Excel oleh admin, dan form
 // publik. Batas panjang di sini sama dengan CHECK di database.
 function cleanJemaat(b) {
@@ -677,8 +677,8 @@ const SPECS = {
     clean: (b) => cleanMz(b.tanggal, b), tab: 'mezbah', onConflict: 'tanggal', kunci: (r) => r.tanggal
   },
   jemaat: {
-    cols: ['no_keluarga', 'nama_keluarga', 'nama', 'kepala', 'jk', 'lahir', 'daerah', 'alamat', 'hp'], need: ['nama'], file: 'template-jemaat.csv',
-    contoh: { no_keluarga: '1', nama_keluarga: 'Sagala', nama: 'Yenro Sagala', kepala: 'Bapak Sagala / Ibu Simbolon', jk: 'L', lahir: '1990-01-31', daerah: 'Samosir, Sumatera Utara', alamat: 'Kotaraja, Jayapura', hp: '081234567890' },
+    cols: ['no_keluarga', 'nama_keluarga', 'nama', 'kepala', 'jk', 'lahir', 'pelayanan', 'daerah', 'alamat', 'hp'], need: ['nama'], file: 'template-jemaat.csv',
+    contoh: { no_keluarga: '1', nama_keluarga: 'Sagala', nama: 'Yenro Sagala', kepala: 'Bapak Sagala / Ibu Simbolon', jk: 'L', lahir: '1990-01-31', pelayanan: 'Liturgos', daerah: 'Samosir, Sumatera Utara', alamat: 'Kotaraja, Jayapura', hp: '081234567890' },
     clean: cleanJemaat, tab: 'jemaat', onConflict: 'no_keluarga,nama', kunci: (r) => r.no_keluarga + '|' + r.nama
   }
 };
@@ -698,7 +698,7 @@ $('imp_jenis').onchange = () => { $('imp_out').textContent = ''; };
 
 /* ---- Data Jemaat: dashboard di Tentang, pendaftaran di Kontak ---- */
 let JM = [], JMP = [];
-const JF = ['nama', 'nama_keluarga', 'kepala', 'jk', 'lahir', 'daerah', 'alamat', 'hp'];
+const JF = ['nama', 'nama_keluarga', 'kepala', 'jk', 'lahir', 'pelayanan', 'daerah', 'alamat', 'hp'];
 const jmTgl = (l) => { if (!l) return '-'; const t = tgl(l); return t.d + ' ' + BULAN[t.m].slice(0, 3) + ' ' + t.y; };
 const jmUsia = (l) => { if (!l) return ''; const u = new Date().getFullYear() - +l.slice(0, 4); return u >= 0 && u < 130 ? u + ' th' : ''; };
 // Satu pendaftaran keluarga = beberapa baris yang berbagi keluarga_ref.
@@ -727,7 +727,7 @@ const renderJemaat = () => {
     ? grupDaftar().map(grp => {
         const s = grp[0];
         return `<div class="jmrow"><div><b>${esc(s.nama)}</b> &middot; ${esc(s.jk || '-')} &middot; ${esc(s.nama_keluarga || 'tanpa nama keluarga')}`
-          + `<br><span>${esc(jmTgl(s.lahir))}${s.daerah ? ' &middot; ' + esc(s.daerah) : ''}${s.hp ? ' &middot; ' + esc(s.hp) : ''}</span>`
+          + `<br><span>${esc(jmTgl(s.lahir))}${s.pelayanan ? ' &middot; ' + esc(s.pelayanan) : ''}${s.daerah ? ' &middot; ' + esc(s.daerah) : ''}${s.hp ? ' &middot; ' + esc(s.hp) : ''}</span>`
           + (grp.length > 1 ? `<br><span>Anggota lain: ${grp.slice(1).map(p => esc(p.nama)).join(', ')}</span>` : '')
           + `<br><span>${grp.length} orang</span></div>`
           + `<button class="sm" type="button" data-terima="${esc(refDaftar(grp[0]))}">Terima</button></div>`;
@@ -735,9 +735,10 @@ const renderJemaat = () => {
     : '<p class="note" style="margin:0">Belum ada pendaftaran baru.</p>';
   const list = rowsJemaat();
   $('jmList').innerHTML = list.length
-    ? '<table class="jmtab"><thead><tr><th>No</th><th>Nama</th><th>L/P</th><th>Lahir</th><th>Usia</th><th>Keluarga</th><th>HP</th><th></th></tr></thead><tbody>'
+    ? '<table class="jmtab"><thead><tr><th>No</th><th>Nama</th><th>L/P</th><th>Lahir</th><th>Usia</th><th>Keluarga</th><th>Kerinduan Pelayanan</th><th>HP</th><th></th></tr></thead><tbody>'
       + list.map(r => `<tr><td>${esc(r.no_keluarga)}</td><td>${esc(r.nama)}</td><td>${esc(r.jk || '-')}</td>`
-        + `<td>${esc(jmTgl(r.lahir))}</td><td>${esc(jmUsia(r.lahir))}</td><td>${esc(r.nama_keluarga)}</td><td>${esc(r.hp)}</td>`
+        + `<td>${esc(jmTgl(r.lahir))}</td><td>${esc(jmUsia(r.lahir))}</td><td>${esc(r.nama_keluarga)}</td>`
+        + `<td>${esc(r.pelayanan || '-')}</td><td>${esc(r.hp)}</td>`
         + `<td><button class="sm" type="button" data-ubah="${esc(r.id)}">Ubah</button></td></tr>`).join('')
       + '</tbody></table>'
     : '<p class="note" style="margin:0">Belum ada data. Unduh template Excel lalu impor, atau pakai tombol Impor di halaman Kontak.</p>';
@@ -917,8 +918,8 @@ $('fJemaat').onsubmit = async e => {
     const ref = acakRef();
     const rows = [{ ...kepala, keluarga_ref: ref }];
     for (const box of $('jAgg').children) {
-      const a = { nama: box.querySelector('.a_nama').value, jk: box.querySelector('.a_jk').value, lahir: box.querySelector('.a_lahir').value };
-      if (!a.nama.trim() && !a.jk && !a.lahir) continue; // baris yang dikosongkan bukan anggota
+      const a = { nama: box.querySelector('.a_nama').value, jk: box.querySelector('.a_jk').value, lahir: box.querySelector('.a_lahir').value, pelayanan: box.querySelector('.a_pelayanan').value };
+        if (!a.nama.trim() && !a.jk && !a.lahir && !a.pelayanan.trim()) continue; // baris yang dikosongkan bukan anggota
       const { no_keluarga: _nk, ...m } = cleanJemaat(a); // batas panjang sama seperti database
       rows.push({ ...m, nama_keluarga: kepala.nama_keluarga, kepala: kepala.kepala, keluarga_ref: ref });
     }
@@ -958,7 +959,7 @@ $('jmPending').onclick = async e => {
     const unik = [...new Map(grp.map(p => [p.nama, p])).values()];
     await sb(db('jemaat').upsert(unik.map(p => ({
       no_keluarga: no, nama_keluarga: p.nama_keluarga, nama: p.nama, kepala: p.kepala,
-      jk: p.jk, lahir: p.lahir, daerah: p.daerah, alamat: p.alamat, hp: p.hp
+      jk: p.jk, lahir: p.lahir, pelayanan: p.pelayanan, daerah: p.daerah, alamat: p.alamat, hp: p.hp
     })), { onConflict: 'no_keluarga,nama' }));
     // Hapus lewat keluarga_ref kalau baris itu punya; baris pendaftaran lama
     // tidak punya, jadi ikut terhapus lewat id-nya. Dicek dari datanya, bukan

@@ -359,6 +359,27 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.teks_tentang TO authenticated;
 -- supaya hanya satu akun yang boleh menulis.
 
 -- =====================================================================
+--  11. Kolom pelayanan = kolom "Kerinduan Pelayanan" di file Excel
+-- =====================================================================
+-- Spreadsheet "DATA JEMAAT" punya kolom "Kerinduan Pelayanan" (Liturgos,
+-- Usher, Singer, Musik, LCD, ...). Tanpa kolom ini data itu dibuang saat
+-- impor. Ditambahkan ke KEDUA tabel karena form publik menulis ke
+-- jemaat_daftar, lalu admin menyalinnya ke jemaat saat menerima pendaftaran.
+--
+-- ADD COLUMN IF NOT EXISTS (bukan DROP+CREATE) supaya isi yang sudah ada
+-- tidak hilang kalau file ini dijalankan ulang.
+ALTER TABLE public.jemaat
+  ADD COLUMN IF NOT EXISTS pelayanan text NOT NULL DEFAULT '';
+ALTER TABLE public.jemaat_daftar
+  ADD COLUMN IF NOT EXISTS pelayanan text NOT NULL DEFAULT '';
+
+-- Batas panjang tetap ditegakkan di database, karena pengunjung bisa
+-- memanggil PostgREST langsung tanpa lewat halaman kita.
+ALTER TABLE public.jemaat_daftar DROP CONSTRAINT IF EXISTS c_jd_pelayanan;
+ALTER TABLE public.jemaat_daftar
+  ADD CONSTRAINT c_jd_pelayanan CHECK (char_length(pelayanan) <= 120);
+
+-- =====================================================================
 --  LANGKAH SETELAH MENJALANKAN FILE INI:
 --
 --  1. Rotate password postgres  (sudah kamu paste di chat - WAJIB ganti)

@@ -234,6 +234,7 @@
 <label>Nama kepala keluarga<input id="ju_kepala" maxlength="120"></label>
 <label>Jenis kelamin<select id="ju_jk"><option value="">-</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
 <label>Tanggal lahir<input type="date" id="ju_lahir"></label>
+<label>Kerinduan Pelayanan<input id="ju_pelayanan" list="npel" maxlength="120" placeholder="Liturgos, Usher, Singer, ..."></label>
 <label>Daerah<input id="ju_daarah" maxlength="120"></label>
 <label>Alamat<textarea id="ju_alamat" maxlength="400"></textarea></label>
 <label>Nomor HP atau WhatsApp<input id="ju_hp" inputmode="tel" maxlength="40"></label>
@@ -250,17 +251,19 @@
 <label>Orang tua / kepala keluarga<input id="j_kepala" maxlength="120" placeholder="Contoh: Bapak Sagala / Ibu Simbolon"></label>
 <label>Jenis kelamin<select id="j_jk"><option value="">Pilih...</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
 <label>Tanggal lahir<input type="date" id="j_lahir" max="2026-12-31"></label>
+<label>Kerinduan Pelayanan<input id="j_pelayanan" list="npel" maxlength="120" placeholder="Liturgos, Usher, Singer, ..."></label>
 <label>Daerah asal<input id="j_daerah" maxlength="120"></label>
 <label>Alamat<textarea id="j_alamat" rows="2" maxlength="400"></textarea></label>
 <label>Nomor HP atau WhatsApp<input id="j_hp" inputmode="tel" maxlength="40" placeholder="08xx"></label>
 <h3 style="margin:18px 0 4px">Anggota keluarga lain</h3>
-<p class="note" style="margin:0 0 8px">Untuk setiap anggota cukup nama, jenis kelamin, dan tanggal lahir. Alamat dan nomor HP tidak perlu diulang.</p>
+<p class="note" style="margin:0 0 8px">Untuk setiap anggota cukup nama, jenis kelamin, tanggal lahir, dan kerinduan pelayanan. Alamat dan nomor HP tidak perlu diulang.</p>
 <div id="jAgg"></div>
 <template id="tplAgg">
 <div class="jagg">
 <label>Nama anggota<input class="a_nama" maxlength="120"></label>
 <label>Jenis kelamin<select class="a_jk"><option value="">Pilih...</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
 <label>Tanggal lahir<input type="date" class="a_lahir" max="2026-12-31"></label>
+<label>Kerinduan Pelayanan<input class="a_pelayanan" list="npel" maxlength="120"></label>
 <button class="sm" type="button" data-x>&minus; Hapus anggota ini</button>
 </div>
 </template>
@@ -280,6 +283,9 @@
 </div>
 </dialog>
 <datalist id="nkom"><option>Pemuda</option><option>Remaja</option><option>PW</option><option>PKP</option></datalist>
+<!-- Saran nilai "Kerinduan Pelayanan", diambil dari kolom D file DATA JEMAAT.
+    Tetap input bebas: datalist hanya memberi saran, tidak membatasi. -->
+<datalist id="npel"><option>Liturgos</option><option>Usher</option><option>Singer</option><option>Musik</option><option>LCD</option><option>HT</option><option>Singer/Bass</option><option>Singer &amp; Musik</option><option>Liturgos/Singer</option><option>Liturgos/LCD</option><option>Usher/Singer</option></datalist>
 
 <script src="./vendor/supabase.min.js"></script>
 <script src="./supabase-config.js"></script>
