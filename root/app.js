@@ -36,7 +36,7 @@ const qMzHariIni = async () => await qMzSatu(todayWIT())
 
 const PAGES = { beranda: '', tentang: 'Tentang', jadwal: 'Jadwal Ibadah', mezbah: 'Mezbah Keluarga', berita: 'Berita', beritaIsi: 'Berita', kontak: 'Kontak' };
 
-let ROWS = [], FK = '', FB = '', MZL = [];
+let ROWS = [], FK = '', FB = '', MZL = [], MZB = '';
 let EDIT = { id: null, tgl: null };
 const KNAMA = { KU: 'Kebaktian Umum', PW: 'Persekutuan Wanita', PKP: 'Persekutuan Kaum Pria' };
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -104,7 +104,8 @@ function route() {
   if (p === 'berita') loadBerita();
   if (p === 'beritaIsi') bukaBerita(seg[1]);
   if (p === 'jadwal' && seg[1] !== undefined) { FK = decodeURIComponent(seg[1]); if (ROWS.length) renderKomisi(); }
-  if (p === 'tentang') loadTentang();
+  // Kontak ikut memakai data-tek yang sama: alamat/telepon/sosmed disunting di tempat.
+    if (p === 'tentang' || p === 'kontak') loadTentang();
 }
 
 
@@ -218,18 +219,34 @@ $('mzToday').addEventListener('click', e => { if (e.target.id === 'btnToday' && 
 
 async function loadMezbah(buka) {
   try {
-    const list = await qMzDaftar();
-    MZL = list;
-    $('mz').innerHTML = list.length
-      ? list.map(x => `<article class="mzi"><div class="mzb">
+    MZL = await qMzDaftar();
+    renderMezbah();
+    if (buka) bukaBaca(buka);
+  } catch { $('mz').innerHTML = '<p class="note">Renungan belum dapat dimuat.</p>'; }
+}
+
+// Sama dengan renderKomisi: penyaring bulan + cari, lalu kelompokkan per bulan.
+function renderMezbah() {
+  const q = ($('mzCari').value || '').toLowerCase();
+  const months = [...new Set(MZL.map(r => r.tanggal.slice(0, 7)))].sort();
+  $('mzBulan').innerHTML = '<option value="">Semua bulan</option>' + months.map(m => { const [y, mm] = m.split('-'); return `<option value="${m}"${MZB === m ? ' selected' : ''}>${BULAN[+mm - 1]} ${y}</option>`; }).join('');
+  const list = MZL.filter(r => (!MZB || r.tanggal.startsWith(MZB)) &&
+    (!q || [r.judul, r.tema, r.bacaan, r.ayat].join(' ').toLowerCase().includes(q)));
+  $('mzInfo').textContent = list.length + ' renungan'
+    + (MZB ? ' bulan ' + BULAN[+MZB.slice(5) - 1] + ' ' + MZB.slice(0, 4) : '')
+    + (q ? ' untuk "' + q + '"' : '') + '.';
+  let out = '', cur = '';
+  list.forEach(x => {
+    const t = tgl(x.tanggal), key = x.tanggal.slice(0, 7);
+    if (key !== cur) { cur = key; out += `<h2 class="kmon">${BULAN[t.m]} ${t.y}</h2>`; }
+    out += `<article class="mzi"><div class="mzb">
 <p class="rdate">${fmtTgl(x.tanggal)}</p>
 <h3>${esc(x.judul || 'Renungan')}</h3>
 ${x.tema ? `<p class="theme">Tema Mingguan: ${esc(x.tema)}</p>` : ''}
 ${(x.bacaan || x.ayat) ? `<div class="mmeta">${x.bacaan ? `<p><b>Bacaan Alkitab</b>${refHTML(x.bacaan)}</p>` : ''}${x.ayat ? `<p><b>Ayat Kunci</b>${refHTML(x.ayat)}</p>` : ''}</div>` : ''}
-</div><div class="dact">${ADMIN ? `<button class="sm" type="button" data-ubah="${esc(x.tanggal)}">Ubah renungan</button>` : ''}<button class="sm" type="button" data-mz="${esc(x.tanggal)}">Lihat Renungan</button></div></article>`).join('')
-      : '<p class="note">Belum ada renungan.</p>';
-    if (buka) bukaBaca(buka);
-  } catch { $('mz').innerHTML = '<p class="note">Renungan belum dapat dimuat.</p>'; }
+</div><div class="dact">${ADMIN ? `<button class="sm" type="button" data-ubah="${esc(x.tanggal)}">Ubah renungan</button>` : ''}<button class="sm" type="button" data-mz="${esc(x.tanggal)}">Lihat Renungan</button></div></article>`;
+  });
+  $('mz').innerHTML = out || '<p class="note">Tidak ada renungan yang cocok.</p>';
 }
 
 // ---- Berita / newsletter ----
@@ -336,6 +353,8 @@ async function editBerita(id) {
 $('kchips').addEventListener('click', e => { const k = e.target.dataset.k; if (k !== undefined) { FK = k; history.replaceState(null, '', '#/jadwal' + (k ? '/' + encodeURIComponent(k) : '')); renderKomisi(); } });
 $('kBulan').addEventListener('change', e => { FB = e.target.value; renderKomisi(); });
 $('kCari').addEventListener('input', renderKomisi);
+$('mzBulan').addEventListener('change', e => { MZB = e.target.value; renderMezbah(); });
+$('mzCari').addEventListener('input', renderMezbah);
 window.addEventListener('hashchange', route);
 qKomisi().then(d => { ROWS = d; renderKomisi(); })
   .catch(er => { $('klist').innerHTML = '<p class="note">Jadwal belum dapat dimuat: ' + esc(er.message) + '</p>'; });

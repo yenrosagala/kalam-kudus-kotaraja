@@ -125,6 +125,8 @@ dialog h2{margin:0 0 14px;font-size:1.35rem}
 
 /* ---- Mezbah: teks container + popup renungan ---- */
 .mzl{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);align-items:start}
+/* .mzl juga grid 2 kolom, jadi kepala bulan harus melebar penuh seperti di #klist */
+#mz > .kmon,#mz > .note{grid-column:1/-1}
 .mzi{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;border:1px solid var(--line);border-left:4px solid var(--sea);border-radius:var(--r-md);padding:14px 16px;background:var(--surface)}
 .mzi h3{margin:0;font-size:1.05rem}
 .mzi .rdate{margin:0 0 3px}

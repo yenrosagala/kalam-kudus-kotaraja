@@ -103,6 +103,10 @@
 <div class="page" id="mezbah">
 <div class="pagehead"><div class="wrap khead"><div><h1>Mezbah Keluarga</h1><p>Renungan harian untuk ibadah keluarga di rumah.</p></div><button class="sm" id="btnMz" type="button" hidden>+ Tambah renungan</button></div></div>
 <div class="wrap sec">
+<div class="kfil">
+<select id="mzBulan" aria-label="Bulan"></select>
+<input type="search" id="mzCari" placeholder="Cari judul, tema, bacaan..." aria-label="Cari">
+</div>
 <p class="note" id="mzInfo" role="status"></p>
 <div id="mz" class="mzl" aria-live="polite"></div>
 </div>
@@ -126,9 +130,9 @@
 <div class="page" id="kontak">
 <div class="pagehead"><div class="wrap"><h1>Kontak</h1><p>Kami senang menyambut Anda.</p></div></div>
 <div class="wrap sec"><dl>
-<div><dt>Alamat</dt><dd>Kotaraja, Jayapura, Papua (tambahkan alamat lengkap)</dd></div>
-<div><dt>Telepon atau WhatsApp</dt><dd>Tambahkan nomor kontak gereja</dd></div>
-<div><dt>Media sosial</dt><dd>Tambahkan Instagram atau YouTube gereja</dd></div>
+<div><dt>Alamat</dt><dd data-tek="alamat">Kotaraja, Jayapura, Papua (tambahkan alamat lengkap)</dd></div>
+<div><dt>Telepon atau WhatsApp</dt><dd data-tek="telepon">Tambahkan nomor kontak gereja</dd></div>
+<div><dt>Media sosial</dt><dd data-tek="sosmed">Tambahkan Instagram atau YouTube gereja</dd></div>
 </dl>
 <div class="dact" style="margin:22px 0 18px"><button class="btn dk" id="btnDaftar" type="button">Gabung menjadi Jemaat</button><button class="sm" id="btnJemaatImp" type="button" hidden>Impor data Jemaat</button></div>
 <iframe class="peta" title="Peta lokasi Gereja Kristen Kalam Kudus Kotaraja, Jayapura" loading="lazy" src="https://maps.google.com/maps?q=-2.6064034,140.6730183&amp;z=16&amp;output=embed"></iframe>
