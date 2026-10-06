@@ -775,8 +775,8 @@ const renderStat = (s) => {
 const loadStatJemaat = async () => {
   const kosong = $('jStatKosong');
   try {
-    const { data } = await sb(db('jemaat_ringkasan').select('*').limit(1));
-    if (data && data[0]) return renderStat(data[0]);
+    const rows = await sb(db('jemaat_ringkasan').select('*').limit(1));
+    if (rows && rows[0]) return renderStat(rows[0]);
     kosong.textContent = 'Belum ada data resmi untuk ditampilkan.';
   } catch (er) {
     // View-nya belum ada / belum dijalankan, bukan emptiness data.
