@@ -235,6 +235,13 @@ dialog.form .mzf label:has(textarea){grid-column:1/-1}
 .bringkas{color:var(--muted);margin:0;font-size:.98rem}
 .bact{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:14px}
 .alink{display:inline-block;text-decoration:none;line-height:1.4}
+/* galeri: satu kartu per album, folder Drive tampil lewat iframe google */
+.gcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1);overflow:hidden;padding:18px;margin-bottom:22px}
+.ghead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.ghead h3{margin:0;font-size:1.3rem;line-height:1.25}
+.ghead .dact{margin-top:0;padding-top:0}
+.gdrv{width:100%;height:440px;border:0;border-radius:var(--r-md);background:var(--surface)}
+@media (max-width:599px){.gdrv{height:340px}}
 /* carousel foto di halaman isi berita */
 .car{margin:0 0 28px}
 .carT{aspect-ratio:16/9;background:var(--line);border-radius:var(--r-lg);overflow:hidden}

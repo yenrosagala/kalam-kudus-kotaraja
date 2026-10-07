@@ -24,7 +24,7 @@
 <header><div class="bar">
 <a class="brand" href="#/beranda"><span class="logo"><img src="./gkkk-mark.png" width="76" height="76" alt=""></span>GK Kalam Kudus<br>Kotaraja</a>
 <nav aria-label="Navigasi utama" id="nav">
-<a href="#/beranda" data-p="beranda">Beranda</a><a href="#/tentang" data-p="tentang">Tentang</a><a href="#/jadwal" data-p="jadwal">Jadwal Ibadah</a><a href="#/mezbah" data-p="mezbah">Mezbah Keluarga</a><a href="#/berita" data-p="berita">Berita</a><a href="#/kelola" data-p="kelola" id="kelolaNav" hidden>Kelola Jemaat</a><a href="#/kontak" data-p="kontak">Kontak</a>
+<a href="#/beranda" data-p="beranda">Beranda</a><a href="#/tentang" data-p="tentang">Tentang</a><a href="#/jadwal" data-p="jadwal">Jadwal Ibadah</a><a href="#/mezbah" data-p="mezbah">Mezbah Keluarga</a><a href="#/berita" data-p="berita">Berita</a><a href="#/galeri" data-p="galeri">Galeri</a><a href="#/kelola" data-p="kelola" id="kelolaNav" hidden>Kelola Jemaat</a><a href="#/kontak" data-p="kontak">Kontak</a>
 <button class="sm navlogin" id="btnLogin" type="button">Login</button>
 </nav></div></header>
 
@@ -124,6 +124,15 @@
 </div>
 </div>
 
+<div class="page" id="galeri">
+<div class="pagehead"><div class="wrap khead"><div><h1>Galeri</h1><p>Foto kegiatan dalam folder Google Drive. Pilih bulan untuk menyaring.</p></div><button class="sm" id="btnGaleri" type="button" hidden>+ Tambah album</button></div></div>
+<div class="wrap sec">
+<div class="kfil"><select id="gBulan" aria-label="Bulan"></select></div>
+<p class="note" id="gInfo" role="status"></p>
+<div id="glist"></div>
+</div>
+</div>
+
 <div class="page" id="kelola">
 <div class="pagehead"><div class="wrap"><h1>Kelola Jemaat</h1><p>Daftar resmi jemaat dan pendaftaran yang masuk dari form publik. Hanya terlihat oleh pengelola. Data pribadi tidak ditampilkan kepada pengunjung.</p></div></div>
 <div class="wrap sec">
@@ -175,7 +184,7 @@
 
 <footer><div class="wrap">
 <div><b>GK Kalam Kudus Kotaraja</b><br>Kotaraja, Jayapura, Papua</div>
-<div><b>Halaman</b><a href="#/tentang">Tentang</a><a href="#/jadwal">Jadwal Ibadah</a><a href="#/mezbah">Mezbah Keluarga</a><a href="#/berita">Berita</a><a href="#/kontak">Kontak</a></div>
+<div><b>Halaman</b><a href="#/tentang">Tentang</a><a href="#/jadwal">Jadwal Ibadah</a><a href="#/mezbah">Mezbah Keluarga</a><a href="#/berita">Berita</a><a href="#/galeri">Galeri</a><a href="#/kontak">Kontak</a></div>
 </div></footer>
 
 <dialog id="dlg" aria-label="Tambah jadwal">
@@ -245,6 +254,15 @@
 <label>Isi berita<textarea id="b_isi" rows="10" required></textarea></label>
 <div class="dact"><button class="btn dk" type="submit">Simpan berita</button><button class="sm" type="button" id="b_del">Hapus berita ini</button><button class="sm" type="button" data-x>Batal</button></div>
 <p class="note" id="bmsg" role="alert"></p>
+</form>
+
+<form id="fGaleri" class="mzf" autocomplete="off" hidden>
+<h2 id="gTitle2">Tambah album</h2>
+<label>Tanggal kegiatan<input type="date" id="g_tanggal" required></label>
+<label>Nama event<input id="g_event" required placeholder="Contoh: Natal 2026"></label>
+<label>Link folder Google Drive<textarea id="g_link" rows="2" placeholder="https://drive.google.com/drive/folders/..."></textarea></label>
+<div class="dact"><button class="btn dk" type="submit">Simpan album</button><button class="sm" type="button" id="g_del">Hapus album ini</button><button class="sm" type="button" data-x>Batal</button></div>
+<p class="note" id="gmsg" role="alert"></p>
 </form>
 
 <form id="fImp" class="mzf" autocomplete="off" hidden>

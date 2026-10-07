@@ -26,6 +26,8 @@ const qMzDaftar = async () => sb(db('mezbah').select('tanggal,judul,tema,bacaan,
 const qMzSatu = async (t) => sb(db('mezbah').select('*').eq('tanggal', t).maybeSingle());
 const qBeritaList = async () => sb(db('berita').select('id,tanggal,judul,ringkasan,gambar').order('tanggal', { ascending: false }).order('id', { ascending: false }));
 const qBerita = async (id) => sb(db('berita').select('*').eq('id', id).maybeSingle());
+const qGaleri = async () => sb(db('galeri').select('id,tanggal,event,link').order('tanggal', { ascending: false }).order('id', { ascending: false }));
+const qGaleriSatu = async (id) => sb(db('galeri').select('*').eq('id', id).maybeSingle());
 // Hanya admin boleh membaca (RLS menolak anon), jadi selalu dipanggil dari syncAdmin.
 const qJemaat = async () => sb(db('jemaat').select('*').order('no_keluarga').order('nama'));
 const qPending = async () => sb(db('jemaat_daftar').select('*').order('dibuat', { ascending: false }));
@@ -34,7 +36,7 @@ const qMzHariIni = async () => await qMzSatu(todayWIT())
   || await sb(db('mezbah').select('*').lte('tanggal', todayWIT()).order('tanggal', { ascending: false }).limit(1).maybeSingle())
   || await sb(db('mezbah').select('*').order('tanggal', { ascending: false }).limit(1).maybeSingle());
 
-const PAGES = { beranda: '', tentang: 'Tentang', jadwal: 'Jadwal Ibadah', mezbah: 'Mezbah Keluarga', berita: 'Berita', beritaIsi: 'Berita', kelola: 'Kelola Jemaat', kontak: 'Kontak' };
+const PAGES = { beranda: '', tentang: 'Tentang', jadwal: 'Jadwal Ibadah', mezbah: 'Mezbah Keluarga', berita: 'Berita', beritaIsi: 'Berita', galeri: 'Galeri', kelola: 'Kelola Jemaat', kontak: 'Kontak' };
 
 let ROWS = [], FK = '', FB = '', MZL = [], MZB = '';
 let EDIT = { id: null, tgl: null };
@@ -104,6 +106,7 @@ function route() {
   if (p === 'mezbah') loadMezbah(seg[1]);
   if (p === 'berita') loadBerita();
   if (p === 'beritaIsi') bukaBerita(seg[1]);
+  if (p === 'galeri') loadGaleri();
   if (p === 'jadwal' && seg[1] !== undefined) { FK = decodeURIComponent(seg[1]); if (ROWS.length) renderKomisi(); }
   if (p === 'kelola') loadJemaat();
   // Kontak ikut memakai data-tek yang sama: alamat/telepon/sosmed disunting di tempat.
@@ -366,8 +369,8 @@ const NFIELDS = ['tipe', 'tanggal', 'komisi', 'judul', 'teks', 'nats_pembimbing'
 const NDEF = { tipe: 'KU', status: 'TERJADWAL', tempat: 'GKKK Kotaraja', waktu: '09.30 WIT' };
 let ADMIN = false;
 const panel = (id) => {
-  ['fLogin', 'dNew', 'dMz', 'fImp', 'fBerita', 'fJemaat', 'dJm', 'dBaca', 'dKirim'].forEach(p => { $(p).hidden = p !== id; });
-  $('dlg').className = { fLogin: 'login', dNew: 'form', dMz: 'form', fImp: 'form', fBerita: 'form', fJemaat: 'form', dJm: 'form', dBaca: 'wide', dKirim: 'form' }[id];
+  ['fLogin', 'dNew', 'dMz', 'fImp', 'fBerita', 'fGaleri', 'fJemaat', 'dJm', 'dBaca', 'dKirim'].forEach(p => { $(p).hidden = p !== id; });
+  $('dlg').className = { fLogin: 'login', dNew: 'form', dMz: 'form', fImp: 'form', fBerita: 'form', fGaleri: 'form', fJemaat: 'form', dJm: 'form', dBaca: 'wide', dKirim: 'form' }[id];
 };
 const Segarkan = async () => {
   ROWS = await qKomisi();
@@ -383,6 +386,7 @@ const syncAdmin = async () => {
   $('btnTambah').hidden = !ADMIN;
   $('btnMz').hidden = !ADMIN;
   $('btnBerita').hidden = !ADMIN;
+  $('btnGaleri').hidden = !ADMIN;
   $('btnJemaatImp').hidden = !ADMIN;
   $('kelolaNav').hidden = !ADMIN;
   if (ADMIN) { await Segarkan(); await loadJemaat(); }
@@ -392,6 +396,7 @@ const syncAdmin = async () => {
   renderKomisi();
   await loadMezbah();
   if (BRS.length) renderBerita();
+  if (GL.length) renderGaleri();
 };
 let IMP_HOST = 'dNew', IMP_LABEL = 'Tambah jadwal';
 const mode = (host, jenis, label) => {
@@ -551,6 +556,26 @@ const simpanBerita = (r, id) => {
   butuhAdmin();
   return id ? sb(db('berita').update(r).eq('id', id).select().single())
             : sb(db('berita').insert(r).select().single());
+};
+const GFLEN = { event: 200, link: 800 };
+function cleanGaleri(b) {
+  const tanggal = String(b.tanggal || '').trim();
+  if (!validDate(tanggal)) throw new Error('Tanggal tidak valid (format YYYY-MM-DD).');
+  const r = { tanggal };
+  for (const [k, max] of Object.entries(GFLEN)) {
+    const v = String(b[k] ?? '').replace(/\r\n/g, '\n').trim();
+    if (v.length > max) throw new Error(`Kolom ${k} terlalu panjang (maks. ${max} karakter).`);
+    r[k] = v;
+  }
+  if (!r.event) throw new Error('Nama event wajib diisi.');
+  if (r.link && !driveId(r.link)) throw new Error('Link harus tautan Google Drive (folder/file) yang valid.');
+  return r;
+}
+const hapusGaleri = (id) => { butuhAdmin(); return sb(db('galeri').delete().eq('id', id)); };
+const simpanGaleri = (r, id) => {
+  butuhAdmin();
+  return id ? sb(db('galeri').update(r).eq('id', id).select().single())
+            : sb(db('galeri').insert(r).select().single());
 };
 $('fLogin').onsubmit = async e => {
   e.preventDefault();
@@ -1141,6 +1166,97 @@ $('fImp').onsubmit = async e => {
     if (ADMIN) await loadJemaat();
   } catch (er) { $('imp_out').textContent = er.message; }
 };
+// ---- Galeri: album foto kegiatan, tiap entri = satu link folder Google Drive ----
+let GL = [], GB = '';
+// Ambil id folder/file dari beberapa bentuk tautan Google Drive
+// (folder, open?id=, file/d/...). Kosong = bukan tautan Drive.
+const driveId = (link) => {
+  const m = /\/drive\/folders\/([A-Za-z0-9_-]+)/.exec(link) || /[?&]id=([A-Za-z0-9_-]+)/.exec(link) || /\/file\/d\/([A-Za-z0-9_-]+)/.exec(link);
+  return m ? m[1] : '';
+};
+// Folder Drive ditampilkan tanpa kode: pakai iframe embeddedfolderview bawaan Google.
+const driveEmbed = (link) => {
+  const id = driveId(link);
+  return id ? `<iframe class="gdrv" src="https://drive.google.com/embeddedfolderview?id=${esc(id)}#grid" loading="lazy" title="Album foto Google Drive"></iframe>` : '';
+};
+
+const renderGaleri = () => {
+  const months = [...new Set(GL.map(r => r.tanggal.slice(0, 7)))];
+  $('gBulan').innerHTML = '<option value="">Semua bulan</option>' + months.map(m => {
+    const [y, mm] = m.split('-');
+    return `<option value="${m}"${GB === m ? ' selected' : ''}>${BULAN[+mm - 1]} ${y}</option>`;
+  }).join('');
+  const list = GB ? GL.filter(r => r.tanggal.startsWith(GB)) : GL;
+  let out = '', cur = '';
+  list.forEach(r => {
+    const t = tgl(r.tanggal), key = r.tanggal.slice(0, 7);
+    if (key !== cur) { cur = key; out += `<h2 class="kmon">${BULAN[t.m]} ${t.y}</h2>`; }
+    const emb = driveEmbed(r.link);
+    out += `<article class="gcard">
+<div class="ghead"><div><h3>${esc(r.event)}</h3><p class="rdate">${esc(fmtTgl(r.tanggal))}</p></div>
+<div class="dact">${r.link ? `<a class="sm alink" href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">Buka di Drive</a>` : ''}${ADMIN ? `<button class="sm" type="button" data-ug="${r.id}">Ubah</button>` : ''}</div></div>
+${emb}
+</article>`;
+  });
+  $('glist').innerHTML = out || '<p class="note">Belum ada album. Klik "+ Tambah album" (sesudah login admin) untuk mulai.</p>';
+  $('gInfo').textContent = list.length ? list.length + ' album' : '';
+};
+
+async function loadGaleri() {
+  if (!GL.length) {
+    try { GL = await qGaleri(); }
+    catch { $('glist').innerHTML = '<p class="note">Galeri belum dapat dimuat. Muat ulang halaman.</p>'; return; }
+  }
+  renderGaleri();
+}
+
+$('gBulan').addEventListener('change', e => { GB = e.target.value; renderGaleri(); });
+$('glist').addEventListener('click', e => { const id = e.target.dataset.ug; if (id) editGaleri(id); });
+
+const GFIELDS = ['tanggal', 'event', 'link'];
+const gReset = () => {
+  GFIELDS.forEach(k => { $('g_' + k).value = ''; });
+  // ponytail: hanya sampai kalender saat ini; kegiatan masa depan tak perlu tanggal default
+  $('g_tanggal').value = new Date().toISOString().slice(0, 10);
+  EDIT.id = null; $('gTitle2').textContent = 'Tambah album';
+  $('gmsg').textContent = '';
+};
+async function editGaleri(id) {
+  gReset();
+  const g = await qGaleriSatu(id).catch(() => null);
+  if (!g) return;
+  GFIELDS.forEach(k => { $('g_' + k).value = g[k] ?? ''; });
+  EDIT.id = g.id;
+  $('gTitle2').textContent = 'Ubah album';
+  $('gmsg').textContent = '"Simpan album" menimpa entri ini.';
+  bukaDlg('fGaleri', 'Galeri');
+}
+$('btnGaleri').onclick = () => { gReset(); bukaDlg('fGaleri', 'Galeri'); };
+$('g_del').onclick = async () => {
+  if (!EDIT.id) return;
+  const g = GL.find(x => String(x.id) === String(EDIT.id));
+  if (!confirm('Hapus album "' + (g ? g.event : '') + '"? Tindakan ini tidak bisa dibatalkan.')) return;
+  $('gmsg').textContent = 'Menghapus...';
+  try {
+    await hapusGaleri(EDIT.id);
+    $('dlg').close(); EDIT.id = null;
+    GL = [];
+    await loadGaleri();
+  } catch (er) { $('gmsg').textContent = er.message; }
+};
+$('fGaleri').onsubmit = async e => {
+  e.preventDefault();
+  const body = {};
+  GFIELDS.forEach(k => { body[k] = $('g_' + k).value; });
+  $('gmsg').textContent = 'Menyimpan...';
+  try {
+    await simpanGaleri(cleanGaleri(body), EDIT.id);
+    $('dlg').close(); EDIT.id = null;
+    GL = [];
+    await loadGaleri();
+  } catch (er) { $('gmsg').textContent = er.message; }
+};
+
 // sesi admin tersimpan di localStorage oleh Supabase Auth; baca yang ada,
 // jangan tanya password lagi. Dulu ini /api/me.
 syncAdmin().catch(() => {});
