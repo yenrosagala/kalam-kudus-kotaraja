@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Panduan Pengelola Website GK Kalam Kudus Kotaraja</title>
+<style>
+  :root{
+    --warna:#1f6fb2; --gelap:#123a5c; --aksen:#e8a33d; --teks:#22303d;
+    --abu:#66788a; --garis:#dbe4ec; --latar:#f4f7fa;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:"Segoe UI",Arial,sans-serif;color:var(--teks);font-size:12.5px;line-height:1.55}
+  @page{size:A4;margin:16mm 14mm 18mm 14mm}
+  body{padding:0}
+  .hal{border-bottom:1px solid var(--garis);margin-bottom:22px}
+  /* Cover */
+  .cover{height:0;page-break-after:always}
+  .sampul{border-bottom:0;padding:8mm 0 0}
+  .sampul .lencana{display:inline-block;background:var(--gelap);color:#fff;font-weight:700;letter-spacing:2px;padding:6px 14px;border-radius:4px;font-size:11px;text-transform:uppercase;margin-bottom:34px}
+  .sampul h1{font-size:30px;line-height:1.2;color:var(--gelap);margin:0 0 10px}
+  .sampul .sub{font-size:14px;color:var(--abu);margin:0 0 40px}
+  .sampul .kotak{background:var(--latar);border:1px solid var(--garis);border-left:4px solid var(--warna);border-radius:6px;padding:14px 18px;max-width:130mm}
+  .sampul .kotak h2{font-size:13px;margin:0 0 8px;color:var(--gelap)}
+  .sampul .kotak ul{margin:0;padding-left:18px}
+  .sampul .kotak li{margin:3px 0}
+  .sampul .meta{margin-top:44px;color:var(--abu);font-size:11.5px}
+  /* Bagian */
+  h2.bag{margin:0 0 6px;color:var(--gelap);font-size:19px;padding-bottom:6px;border-bottom:2px solid var(--aksen)}
+  h3{color:var(--gelap);font-size:14.5px;margin:18px 0 4px}
+  p{margin:6px 0}
+  ol.steps{margin:8px 0 10px;padding-left:22px}
+  ol.steps li{margin:4px 0}
+  .catatan{background:#fff8e8;border:1px solid #f0ddb0;border-radius:5px;padding:8px 12px;margin:8px 0}
+  .penting{background:#fdecec;border:1px solid #ecc;border-radius:5px;padding:8px 12px;margin:8px 0}
+  .info{background:var(--latar);border:1px solid var(--garis);border-radius:5px;padding:8px 12px;margin:8px 0}
+  .datar{display:block;margin:8px 0}
+  figure{margin:12px 0 16px;page-break-inside:avoid}
+  figure img{width:100%;max-width:172mm;height:auto;border:1px solid var(--garis);border-radius:6px;background:#fff}
+  figcaption{font-size:11px;color:var(--abu);margin-top:4px;font-style:italic}
+  .label{font-size:11px;color:var(--warna);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+  code{background:#eef3f7;border:1px solid #d7e2ec;border-radius:3px;padding:1px 5px;font-family:Consolas,monospace;font-size:11px}
+  table.isi{width:100%;border-collapse:collapse;margin:8px 0}
+  table.isi th,table.isi td{border:1px solid var(--garis);padding:5px 8px;text-align:left;vertical-align:top}
+  table.isi th{background:var(--latar);color:var(--gelap);font-weight:600}
+  tr,figure,ol.steps{page-break-inside:avoid}
+</style>
+</head>
+<body>
+
+<!-- ===================== SAMPUL ===================== -->
+<div class="sampul hal">
+  <span class="lencana">Admin &middot; Dokumen internal</span>
+  <h1>Panduan Pengelola<br>Website Gereja</h1>
+  <p class="sub">Gereja Kristen Kalam Kudus Kotaraja &middot; Jayapura, Papua<br>Mengelola jadwal ibadah, renungan, berita, dan data jemaat</p>
+  <div class="kotak">
+    <h2>Yang bisa dilakukan setelah masuk sebagai pengelola</h2>
+    <ul>
+      <li>Tambah, ubah, dan hapus <b>jadwal ibadah</b> (Kebaktian Umum + komisi)</li>
+      <li>Menulis <b>renungan harian</b> Mezbah Keluarga beserta pokok doa</li>
+      <li>Menerbitkan <b>berita</b> dan pengumuman</li>
+      <li>Mengelola <b>data jemaat</b>: statistik, saringan, ubah data, impor/unduh Excel</li>
+      <li><b>Kirim undangan WhatsApp</b> dalam sekali klik</li>
+      <li>Menyunting langsung teks halaman <b>Tentang</b> dan <b>Kontak</b></li>
+    </ul>
+  </div>
+  <p class="meta">Website: https://yenrosagala.github.io/kalam-kudus-kotaraja/ &middot; Tanggal dokumen: Oktober 2026</p>
+</div>
+
+<!-- ===================== 1. MASUK ===================== -->
+<div class="hal">
+  <p class="label">Bagian 1</p>
+  <h2 class="bag">Masuk sebagai pengelola</h2>
+  <p>Bagian admin hanya terbuka untuk pengelola. Pengunjung biasa yang membuka situs hanya melihat halaman depan tanpa tombol pengelolaan.</p>
+  <ol class="steps">
+    <li>Buka situs gereja lalu klik tombol <b>Login</b> di kanan atas.</li>
+    <li>Isi <b>Email</b> dan <b>Password</b> yang sudah didaftarkan untuk pengelola.</li>
+    <li>Klik <b>Masuk</b>. Setelah berhasil, tombol berubah menjadi <b>Keluar</b> dan menu <b>Kelola Jemaat</b> muncul di daftar halaman.</li>
+  </ol>
+  <figure><img src="shots/01-login.png" alt="Dialog login"><figcaption>1. Dialog Masuk sebagai admin — email dan password pengelola.</figcaption></figure>
+  <figure><img src="shots/02-beranda-admin.png" alt="Beranda setelah login"><figcaption>2. Setelah masuk: tombol berubah jadi "Keluar" dan menu Kelola Jemaat tersedia.</figcaption></figure>
+  <div class="catatan">Sesi tetap tersimpan sampai Anda menekan <b>Keluar</b>. Untuk alasan keamanan, jangan pernah membagikan akun pengelola kepada orang lain.</div>
+</div>
+
+<!-- ===================== 2. JADWAL ===================== -->
+<div class="hal">
+  <p class="label">Bagian 2</p>
+  <h2 class="bag">Mengelola Jadwal Ibadah</h2>
+  <p>Halaman Jadwal menampilkan entri terbaru dari atas. Saat masuk sebagai pengelola, setiap entri mendapat tombol <b>Ubah jadwal</b>.</p>
+  <ol class="steps">
+    <li>Di halaman Jadwal, klik <b>+ Tambah jadwal</b>.</li>
+    <li>Pilih <b>tanggal</b>. Atur <b>Jenis</b> ke <i>Kebaktian Umum</i> atau <i>Komisi</i> — untuk komisi muncul kotak <b>Komisi</b> (Pemuda, Remaja, PW, PKP).</li>
+    <li>Isi <b>judul</b>, <b>teks/ayat utama</b>, <b>pelayan firman</b>, <b>liturgis</b>, <b>tempat</b>, dan <b>waktu</b>. Kolom lain boleh dikosongkan.</li>
+    <li>Atur <b>Status</b>: <i>TERJADWAL</i> (akan datang), <i>SELESAI</i> (sudah lewat), atau <i>BATAL</i>.</li>
+    <li>Klik <b>Simpan jadwal</b>.</li>
+  </ol>
+  <figure><img src="shots/07-jadwal-admin.png" alt="Daftar jadwal admin"><figcaption>3. Daftar jadwal saat masuk sebagai pengelola; setiap entri punya tombol Ubah jadwal.</figcaption></figure>
+  <figure><img src="shots/08-tambah-jadwal.png" alt="Form tambah jadwal"><figcaption>4. Form tambah jadwal. Untuk jenis Komisi, kotak "Komisi" ikut muncul.</figcaption></figure>
+  <h3>Mengubah dan menghapus</h3>
+  <p>Klik <b>Ubah jadwal</b> pada satu entri untuk mengoreksi isinya, lalu <b>Simpan jadwal</b> (menimpa entri tersebut). Untuk menghapus entri yang sedang dibuka, gunakan <b>Hapus entri ini</b> — sistem akan meminta konfirmasi.</p>
+  <div class="info">Entri berstatus BATAL tidak dipakai sebagai "ibadah berikutnya" dan tidak muncul dalam teks undangan WhatsApp.</div>
+</div>
+
+<!-- ===================== 3. MEZBAH ===================== -->
+<div class="hal">
+  <p class="label">Bagian 3</p>
+  <h2 class="bag">Mezbah Keluarga (renungan harian)</h2>
+  <p>Mezbah Keluarga menampilkan satu renungan per tanggal. Renungan "hari ini" dipilih otomatis berdasarkan tanggal sekarang, dan pengunjung bisa membuka hari lain lewat dropdown bulan.</p>
+  <ol class="steps">
+    <li>Buka halaman <b>Mezbah Keluarga</b> lalu klik <b>+ Tambah renungan</b>.</li>
+    <li>Isi <b>tanggal</b>, <b>judul</b>, <b>tema mingguan</b>, <b>bacaan</b>, dan <b>ayat kunci</b>.</li>
+    <li>Tulis <b>Renungan</b> (intisari singkat untuk dibacakan di rumah), <b>Pesan hari ini</b>, <b>Refleksi keluarga</b>, dan <b>pokok doa</b> (Keluarga Besar GKKK, Misi, dan doa penutup).</li>
+    <li>Klik <b>Simpan renungan</b>.</li>
+  </ol>
+  <figure><img src="shots/09-tambah-renungan.png" alt="Form tambah renungan"><figcaption>5. Form tambah renungan: judul, bacaan, renungan, refleksi, dan pokok doa.</figcaption></figure>
+  <div class="info">Entri tanggal yang sama otomatis <b>ditimpa</b> saat disimpan — satu tanggal hanya satu renungan. Gunakan <b>Hapus entri ini</b> untuk menghapus renungan terbuka.</div>
+</div>
+
+<!-- ===================== 4. BERITA ===================== -->
+<div class="hal">
+  <p class="label">Bagian 4</p>
+  <h2 class="bag">Berita &amp; pengumuman</h2>
+  <ol class="steps">
+    <li>Buka halaman <b>Berita</b> lalu klik <b>+ Tambah berita</b>.</li>
+    <li>Isi <b>tanggal</b>, <b>judul berita</b>, dan <b>ringkasan</b> (tampil di kartu berita).</li>
+    <li><b>Link foto</b>: satu alamat gambar per baris. Bisa diberi beberapa gambar untuk tampilan carousel.</li>
+    <li>Tulis <b>Isi berita</b> lalu klik <b>Simpan berita</b>.</li>
+  </ol>
+  <figure><img src="shots/10-tambah-berita.png" alt="Form tambah berita"><figcaption>6. Form tambah berita. Ringkasan tampil di kartu, foto bisa lebih dari satu (carousel).</figcaption></figure>
+</div>
+
+<!-- ===================== 5. KELOLA JEMAAT ===================== -->
+<div class="hal">
+  <p class="label">Bagian 5</p>
+  <h2 class="bag">Kelola Jemaat (daftar resmi)</h2>
+  <p>Halaman ini hanya terlihat oleh pengelola. Di sini ada <b>statistik</b>, <b>pendaftaran yang masuk dari form publik</b>, dan <b>daftar resmi</b> yang bisa disaring.</p>
+  <ol class="steps">
+    <li>Buka menu <b>Kelola Jemaat</b> di daftar halaman.</li>
+    <li>Kartu statistik menampilkan jumlah keluarga, jiwa, laki-laki/perempuan, dan pendaftaran yang menunggu.</li>
+    <li>Bagian <b>Pendaftaran dari form publik</b> menampilkan keluarga yang baru mendaftar lewat situs. Klik <b>Terima</b> untuk memindahkan mereka ke daftar resmi.</li>
+    <li>Tabel <b>Daftar resmi</b> bisa disaring per <b>keluarga</b>, <b>daerah</b>, <b>komisi</b>, atau <b>pencarian nama</b>.</li>
+    <li>Klik <b>Ubah</b> pada suatu baris untuk mengoreksi data orang itu.</li>
+  </ol>
+  <figure><img src="shots/03-kelola.png" alt="Halaman kelola jemaat"><figcaption>7. Halaman Kelola Jemaat: statistik, pendaftaran menunggu, dan tabel daftar resmi dengan tombol Terima dan Ubah.</figcaption></figure>
+  <figure><img src="shots/04-kelola-filter.png" alt="Filter komisi"><figcaption>8. Contoh saringan: hanya menampilkan jemaat dengan komisi "Pemuda".</figcaption></figure>
+  <figure><img src="shots/06-ubah-jemaat.png" alt="Dialog ubah data jemaat"><figcaption>9. Dialog Ubah data jemaat — koreksi data per orang.</figcaption></figure>
+  <div class="penting">Data jemaat bersifat pribadi. Halaman Kelola Jemaat tidak pernah tampil untuk pengunjung, dan berkas unduhan sebaiknya disimpan di tempat aman.</div>
+</div>
+
+<!-- ===================== 6. UNDANGAN WA ===================== -->
+<div class="hal">
+  <p class="label">Bagian 6</p>
+  <h2 class="bag">Kirim undangan WhatsApp</h2>
+  <p>Undangan WhatsApp mengirim pesan ke nomor HP jemaat yang dipilih, lengkap dengan jadwal ibadah berikutnya.</p>
+  <ol class="steps">
+    <li>Buka <b>Kelola Jemaat</b>, centang kotak di kiri baris jemaat yang ingin diundang.</li>
+    <li>Klik <b>Kirim undangan (jumlah)</b> di atas tabel.</li>
+    <li>Pilih <b>Jadwal ibadah</b>. Teks pesan terisi otomatis dan boleh diedit.</li>
+    <li>Klik nama jemaat satu per satu — WhatsApp terbuka dengan pesan siap kirim. Tekan kirim di aplikasi WhatsApp.</li>
+  </ol>
+  <figure><img src="shots/05-kirim-undangan.png" alt="Dialog kirim undangan"><figcaption>10. Dialog Kirim undangan WhatsApp: pilih jadwal, periksa teks, lalu klik nama satu per satu untuk membuka chat.</figcaption></figure>
+  <div class="catatan">Jemaat tanpa nomor HP tidak mendapat tautan dan disebutkan di bagian bawah dialog agar Anda bisa menghubunginya dengan cara lain.</div>
+</div>
+
+<!-- ===================== 7. IMPOR ===================== -->
+<div class="hal">
+  <p class="label">Bagian 7</p>
+  <h2 class="bag">Impor &amp; unduh Excel</h2>
+  <ol class="steps">
+    <li>Buka <b>Kelola Jemaat</b> lalu klik <b>Unduh template Excel</b> untuk mendapatkan berkas contoh (CSV) berisi kolom yang benar.</li>
+    <li>Isi di Excel/LibreOffice Calc, simpan sebagai CSV, lalu di situs klik <b>Impor dari Excel</b> dan pilih berkasnya.</li>
+    <li>Klik <b>Impor berkas</b>. Baris yang sudah pernah ada (kunci yang sama) akan <b>diperbarui</b>, bukan digandakan; satu baris gagal tidak membatalkan baris lain.</li>
+    <li>Untuk mencadangkan data, klik <b>Unduh data (CSV)</b> — isinya selalu sama dengan yang sedang tampil di layar (ikut saringan).</li>
+  </ol>
+  <figure><img src="shots/11-impor.png" alt="Dialog impor"><figcaption>11. Dialog Impor dari Excel. Template juga bisa diunduh lewat tautan di dalam dialog ini.</figcaption></figure>
+  <div class="info">Dialog impor memakai satu formulir untuk jadwal, renungan, dan data jemaat — pilih jenisnya pada dropdown <b>Jenis konten</b>. Cara impor dari halaman <b>Jadwal Ibadah</b> atau <b>Mezbah Keluarga</b> juga memakai formulir yang sama.</div>
+</div>
+
+<!-- ===================== 8. TEKS HALAMAN ===================== -->
+<div class="hal">
+  <p class="label">Bagian 8</p>
+  <h2 class="bag">Menyunting teks Tentang &amp; Kontak</h2>
+  <p>Saat masuk sebagai pengelola, paragraf dan isian pada halaman <b>Tentang</b> serta <b>Kontak</b> bisa disunting langsung di halamannya (klik lalu ketik).</p>
+  <figure><img src="shots/12-tentang-edit.png" alt="Halaman tentang sunting"><figcaption>12. Halaman Tentang — teks bisa disunting langsung oleh pengelola.</figcaption></figure>
+  <figure><img src="shots/13-kontak-edit.png" alt="Halaman kontak sunting"><figcaption>13. Halaman Kontak — alamat, telepon/WhatsApp, dan media sosial bisa diganti langsung.</figcaption></figure>
+  <div class="catatan">Setelah selesai menyunting, tekan <b>Keluar</b> untuk kembali ke tampilan pengunjung — perubahan langsung terlihat. Pastikan ejaan dan nomor kontak sudah benar sebelum dipublikasikan.</div>
+</div>
+
+<!-- ===================== 9. FORM PUBLIK ===================== -->
+<div class="hal">
+  <p class="label">Bagian 9</p>
+  <h2 class="bag">Pendaftaran jemaat dari pengunjung</h2>
+  <p>Setiap pengunjung bisa mengisi formulir <b>Gabung menjadi Jemaat</b> di halaman Kontak. Data masuk ke kotak <b>Pendaftaran dari form publik</b> di Kelola Jemaat, lalu Anda klik <b>Terima</b> untuk memindahkannya ke daftar resmi.</p>
+  <figure><img src="shots/14-gabung-jemaat.png" alt="Form publik gabung jemaat"><figcaption>14. Form publik Gabung menjadi Jemaat; anggota keluarga lain bisa ditambahkan dengan tombol "+ Tambah anggota".</figcaption></figure>
+  <div class="penting">Pengunjung hanya bisa mengisi formulir — mereka tidak dapat membaca atau mengubah daftar resmi. Verifikasi datanya dengan orang yang bersangkutan (misalnya lewat WhatsApp) sebelum menekan Terima.</div>
+</div>
+
+<!-- ===================== 10. KELUAR ===================== -->
+<div class="hal" style="border-bottom:0">
+  <p class="label">Bagian 10</p>
+  <h2 class="bag">Keluar dari mode pengelola</h2>
+  <ol class="steps">
+    <li>Klik tombol <b>Keluar</b> di kanan atas.</li>
+    <li>Tombol kembali menjadi <b>Login</b> dan menu Kelola Jemaat menghilang — ini tanda Anda sudah keluar.</li>
+  </ol>
+  <div class="penting">Selalu keluar (terutama di perangkat bersama) sebelum menutup browser. Sesi yang tertinggal tidak akan dikucurkan oleh siapa pun yang membuka situs ini.</div>
+</div>
+
+</body>
+</html>
