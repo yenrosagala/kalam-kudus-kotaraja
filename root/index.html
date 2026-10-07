@@ -16,7 +16,7 @@
 <header><div class="bar">
 <a class="brand" href="#/beranda"><span class="logo"><img src="./gkkk-mark.png" width="76" height="76" alt=""></span>GK Kalam Kudus<br>Kotaraja</a>
 <nav aria-label="Navigasi utama" id="nav">
-<a href="#/beranda" data-p="beranda">Beranda</a><a href="#/tentang" data-p="tentang">Tentang</a><a href="#/jadwal" data-p="jadwal">Jadwal Ibadah</a><a href="#/mezbah" data-p="mezbah">Mezbah Keluarga</a><a href="#/berita" data-p="berita">Berita</a><a href="#/kontak" data-p="kontak">Kontak</a>
+<a href="#/beranda" data-p="beranda">Beranda</a><a href="#/tentang" data-p="tentang">Tentang</a><a href="#/jadwal" data-p="jadwal">Jadwal Ibadah</a><a href="#/mezbah" data-p="mezbah">Mezbah Keluarga</a><a href="#/berita" data-p="berita">Berita</a><a href="#/kelola" data-p="kelola" id="kelolaNav" hidden>Kelola Jemaat</a><a href="#/kontak" data-p="kontak">Kontak</a>
 <button class="sm navlogin" id="btnLogin" type="button">Login</button>
 </nav></div></header>
 
@@ -67,17 +67,6 @@
   <div class="card"><h3>Perkenalkan diri</h3><p>Bicara dengan siapa saja setelah ibadah selesai.</p></div>
   <div class="card"><h3>Tanya lebih lanjut</h3><p>Hubungi gereja untuk bertanya lebih lanjut.</p></div>
   </div>
-<div id="jmDash" hidden>
-<h2>Data Jemaat</h2>
-<p class="note" style="margin-top:0">Hanya terlihat oleh pengelola. Data nama, tanggal lahir, alamat, dan nomor HP tidak ditampilkan kepada pengunjung.</p>
-<div class="jmstat" id="jmStat"></div>
-<div class="dact" style="margin:0 0 14px"><button class="btn" id="jmTpl" type="button">Unduh template Excel</button><button class="btn" id="jmImp" type="button">Impor dari Excel</button><button class="btn" id="jmCsv" type="button">Unduh data (CSV)</button></div>
-<p class="note" style="margin:0 0 10px">Pendaftaran dari form publik. Klik <b>Terima</b> untuk memindahkan orang ke daftar resmi.</p>
-<div id="jmPending"></div>
-<h3>Daftar resmi</h3>
-<div class="kfil"><select id="jmKlg" aria-label="Saring per keluarga"></select><input type="search" id="jmCari" placeholder="Cari nama..." aria-label="Cari emiten"></div>
-<div id="jmList"></div>
-</div>
 <div class="jstat" id="jStatWrap">
 <h2>Jemaat kami</h2>
 <p class="note" style="margin:0 0 12px">Angka diperbarui dari daftar resmi. Data pribadi tidak pernah ditampilkan di sini.</p>
@@ -124,6 +113,21 @@
 <div class="wrap sec" style="padding-top:8px">
 <p class="note"><a href="#/berita">&larr; Semua berita</a></p>
 <div id="d-Berita"></div>
+</div>
+</div>
+
+<div class="page" id="kelola">
+<div class="pagehead"><div class="wrap"><h1>Kelola Jemaat</h1><p>Daftar resmi jemaat dan pendaftaran yang masuk dari form publik. Hanya terlihat oleh pengelola. Data pribadi tidak ditampilkan kepada pengunjung.</p></div></div>
+<div class="wrap sec">
+<div id="jmDash">
+<div class="jmstat" id="jmStat"></div>
+<div class="dact" style="margin:0 0 14px"><button class="btn" id="jmTpl" type="button">Unduh template Excel</button><button class="btn" id="jmImp" type="button">Impor dari Excel</button><button class="btn" id="jmCsv" type="button">Unduh data (CSV)</button></div>
+<p class="note" style="margin:0 0 10px">Pendaftaran dari form publik. Klik <b>Terima</b> untuk memindahkan orang ke daftar resmi.</p>
+<div id="jmPending"></div>
+<h3>Daftar resmi</h3>
+<div class="kfil"><select id="jmKlg" aria-label="Saring per keluarga"></select><select id="jmDaerah" aria-label="Saring per daerah"></select><select id="jmKomisi" aria-label="Saring per komisi"></select><input type="search" id="jmCari" placeholder="Cari nama..." aria-label="Cari nama"><button class="btn" id="jmKirim" type="button" hidden>Kirim undangan</button></div>
+<div id="jmList"></div>
+</div>
 </div>
 </div>
 
@@ -236,6 +240,7 @@
 <label>Tanggal lahir<input type="date" id="ju_lahir"></label>
 <label>Kerinduan Pelayanan<input id="ju_pelayanan" list="npel" maxlength="120" placeholder="Liturgos, Usher, Singer, ..."></label>
 <label>Daerah<input id="ju_daerah" maxlength="120"></label>
+<label>Komisi kebaktian yang diikuti<select id="ju_komisi"></select></label>
 <label>Alamat<textarea id="ju_alamat" maxlength="400"></textarea></label>
 <label>Nomor HP atau WhatsApp<input id="ju_hp" inputmode="tel" maxlength="40"></label>
 <div class="dact"><button class="btn dk" type="submit">Simpan perubahan</button><button class="sm" type="button" data-x>Batal</button></div>
@@ -253,6 +258,7 @@
 <label>Tanggal lahir<input type="date" id="j_lahir" max="2026-12-31"></label>
 <label>Kerinduan Pelayanan<input id="j_pelayanan" list="npel" maxlength="120" placeholder="Liturgos, Usher, Singer, ..."></label>
 <label>Daerah asal<input id="j_daerah" maxlength="120"></label>
+<label>Komisi kebaktian yang diikuti<select id="j_komisi"></select></label>
 <label>Alamat<textarea id="j_alamat" rows="2" maxlength="400"></textarea></label>
 <label>Nomor HP atau WhatsApp<input id="j_hp" inputmode="tel" maxlength="40" placeholder="08xx"></label>
 <h3 style="margin:18px 0 4px">Anggota keluarga lain</h3>
@@ -280,6 +286,15 @@
 </div><button class="sm" type="button" data-x aria-label="Tutup">&times;</button></div>
 <div class="rbody read" id="bIsi"></div>
 <div class="dact"><button class="sm" type="button" id="waShare">Bagikan ke WhatsApp</button></div>
+</div>
+
+<div id="dKirim" class="mzf" hidden>
+<h2>Kirim undangan WhatsApp</h2>
+<p class="note" style="margin:0">Pilih jadwal ibadah, periksa teksnya, lalu klik nama satu per satu. WhatsApp terbuka dengan teks sudah terisi &mdash; tekan kirim di sana.</p>
+<label>Jadwal ibadah<select id="kiJadwal"></select></label>
+<label>Teks pesan<textarea id="kiTeks" rows="8"></textarea></label>
+<div id="kiList"></div>
+<div class="dact"><button class="sm" type="button" data-x>Tutup</button></div>
 </div>
 </dialog>
 <datalist id="nkom"><option>Pemuda</option><option>Remaja</option><option>PW</option><option>PKP</option></datalist>

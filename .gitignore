@@ -15,6 +15,12 @@ data/backups/
 # perlakuan dengan xlsx. Jangan pernah di-commit; tempel ke Supabase lalu hapus.
 *-import.sql
 
+# ekspor/update data jemaat dari dashboard: nama + nomor HP asli.
+# Repo ini public. Jangan pernah di-commit.
+jemaat-semua.csv
+update_jemaat.sql
+logoPng.png
+
 # secrets
 .env
 .env.*

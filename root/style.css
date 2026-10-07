@@ -170,6 +170,9 @@ dialog.form .mzf label:has(textarea){grid-column:1/-1}
 .mzf input,.mzf textarea,.mzf select{font:400 1rem Figtree,sans-serif;padding:10px;border:1.5px solid var(--line);border-radius:var(--r-sm);background:var(--surface);color:var(--ink);width:100%}
 
 .kfil{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+#kiList{grid-column:1/-1}
+#kiList .btn{display:block;margin-bottom:8px}
+#kiList .note{margin:6px 0 0}
 .kfil select,.kfil input{font:400 1rem Figtree,sans-serif;padding:10px 12px;border:1.5px solid var(--line);border-radius:var(--r-md);background:var(--surface);color:var(--ink)}
 .kfil input{flex:1;min-width:220px}
 .kmon{font:700 1.3rem Fraunces,serif;margin:30px 0 12px}
