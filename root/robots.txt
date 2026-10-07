@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gkkkkotaraja.vercel.app/sitemap.xml
