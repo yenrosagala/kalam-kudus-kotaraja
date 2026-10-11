@@ -741,6 +741,38 @@ const JF = ['nama', 'nama_keluarga', 'kepala', 'jk', 'lahir', 'pelayanan', 'daer
 const KOMISI = ['KU', 'Sekolah Minggu', 'Remaja', 'Pemuda', 'PW', 'PKP'];
 const jmTgl = (l) => { if (!l) return '-'; const t = tgl(l); return t.d + ' ' + BULAN[t.m].slice(0, 3) + ' ' + t.y; };
 const jmUsia = (l) => { if (!l) return ''; const u = new Date().getFullYear() - +l.slice(0, 4); return u >= 0 && u < 130 ? u + ' th' : ''; };
+// Ulang tahun "minggu ini" = hari Senin s/d Minggu berjalan. Rentang dibuat
+// dari tanggal nyata, jadi perlintasan tahun (mis. 29 Des - 4 Jan) aman.
+const mdsMinggu = () => {
+  const set = new Set(), now = new Date();
+  now.setHours(12, 0, 0, 0);                       // hindari geser hari dari zona waktu
+  now.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // mundur ke Senin
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now); d.setDate(now.getDate() + i);
+    set.add(String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
+  }
+  return set;
+};
+const renderUlang = () => {
+  // ponytail: kelahiran 29 Feb di tahun non-kabisat dirayakan 28 Feb.
+  const set = mdsMinggu();
+  const ok = (l) => set.has(l.slice(5)) || (l.slice(5) === '02-29' && set.has('02-28'));
+  const thn = new Date().getFullYear();
+  const list = JM.filter(r => r.lahir && ok(r.lahir));
+  $('jmUlang').innerHTML = list.length
+    ? list.map(r => {
+        const t = tgl(r.lahir), u = thn - t.y;
+        const umur = u >= 0 && u < 130 ? ' &middot; <b>' + u + ' th</b>' : '';
+        const wa = waNomor(r.hp);
+        const ke = u >= 0 && u < 130 ? ' yang ke-' + u : '';
+        const pgl = r.jk === 'L' ? 'Bpk. ' : r.jk === 'P' ? 'Ibu ' : '';
+        const pesan = 'Selamat ulang tahun' + ke + ', ' + pgl + r.nama + '! Kami bersyukur atas kehidupan Anda. Doa kami, kiranya Tuhan senantiasa menyertai, memberkati, dan memimpin setiap langkah hidup Anda. Salam kasih dari keluarga besar GKKK Kotaraja.';
+        return `<div class="jmrow"><div><b>${esc(r.nama)}</b>${umur} &middot; ${esc(t.d + ' ' + BULAN[t.m])}<br><span>${esc(r.nama_keluarga || '-')}${r.hp ? ' &middot; ' + esc(r.hp) : ''}</span></div>`
+          + (wa ? `<a class="sm alink" href="https://wa.me/${wa}?text=${encodeURIComponent(pesan)}" target="_blank" rel="noopener noreferrer">Ucapkan selamat</a>` : '')
+          + '</div>';
+      }).join('')
+    : '<p class="note" style="margin:0">Tidak ada yang berulang tahun minggu ini.</p>';
+};
 // Satu pendaftaran keluarga = beberapa baris yang berbagi keluarga_ref.
 // Baris lama yang belum punya ref diperlakukan satu per satu lewat id, jadi
 // tidak pernah ikut tertimpa saat ada keluarga baru masuk.
@@ -794,6 +826,7 @@ const renderJemaat = () => {
       + '</tbody></table>'
     : '<p class="note" style="margin:0">Belum ada data. Unduh template Excel lalu impor, atau pakai tombol Impor di halaman Kontak.</p>';
   sinkronPil();
+  renderUlang();
 };
 $('jmList').onclick = e => {
   const b = e.target.closest('[data-ubah]');
