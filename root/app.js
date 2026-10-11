@@ -26,7 +26,7 @@ const qMzDaftar = async () => sb(db('mezbah').select('tanggal,judul,tema,bacaan,
 const qMzSatu = async (t) => sb(db('mezbah').select('*').eq('tanggal', t).maybeSingle());
 const qBeritaList = async () => sb(db('berita').select('id,tanggal,judul,ringkasan,gambar').order('tanggal', { ascending: false }).order('id', { ascending: false }));
 const qBerita = async (id) => sb(db('berita').select('*').eq('id', id).maybeSingle());
-const qGaleri = async () => sb(db('galeri').select('id,tanggal,event,link').order('tanggal', { ascending: false }).order('id', { ascending: false }));
+const qGaleri = async () => sb(db('galeri').select('id,tanggal,event,deskripsi,link').order('tanggal', { ascending: false }).order('id', { ascending: false }));
 const qGaleriSatu = async (id) => sb(db('galeri').select('*').eq('id', id).maybeSingle());
 // Hanya admin boleh membaca (RLS menolak anon), jadi selalu dipanggil dari syncAdmin.
 const qJemaat = async () => sb(db('jemaat').select('*').order('no_keluarga').order('nama'));
@@ -557,7 +557,7 @@ const simpanBerita = (r, id) => {
   return id ? sb(db('berita').update(r).eq('id', id).select().single())
             : sb(db('berita').insert(r).select().single());
 };
-const GFLEN = { event: 200, link: 800 };
+const GFLEN = { event: 200, deskripsi: 600, link: 800 };
 function cleanGaleri(b) {
   const tanggal = String(b.tanggal || '').trim();
   if (!validDate(tanggal)) throw new Error('Tanggal tidak valid (format YYYY-MM-DD).');
@@ -1224,11 +1224,11 @@ const renderGaleri = () => {
   list.forEach(r => {
     const t = tgl(r.tanggal), key = r.tanggal.slice(0, 7);
     if (key !== cur) { cur = key; out += `<h2 class="kmon">${BULAN[t.m]} ${t.y}</h2>`; }
-    const emb = driveEmbed(r.link);
     out += `<article class="gcard">
 <div class="ghead"><div><h3>${esc(r.event)}</h3><p class="rdate">${esc(fmtTgl(r.tanggal))}</p></div>
 <div class="dact">${r.link ? `<a class="sm alink" href="${esc(r.link)}" target="_blank" rel="noopener noreferrer">Buka di Drive</a>` : ''}${ADMIN ? `<button class="sm" type="button" data-ug="${r.id}">Ubah</button>` : ''}</div></div>
-${emb}
+${r.deskripsi ? `<p class="pre" style="margin:0 0 14px;color:var(--muted)">${esc(r.deskripsi)}</p>` : ''}
+${driveEmbed(r.link)}
 </article>`;
   });
   $('glist').innerHTML = out || '<p class="note">Belum ada album. Klik "+ Tambah album" (sesudah login admin) untuk mulai.</p>';
@@ -1246,7 +1246,7 @@ async function loadGaleri() {
 $('gBulan').addEventListener('change', e => { GB = e.target.value; renderGaleri(); });
 $('glist').addEventListener('click', e => { const id = e.target.dataset.ug; if (id) editGaleri(id); });
 
-const GFIELDS = ['tanggal', 'event', 'link'];
+const GFIELDS = ['tanggal', 'event', 'deskripsi', 'link'];
 const gReset = () => {
   GFIELDS.forEach(k => { $('g_' + k).value = ''; });
   // ponytail: hanya sampai kalender saat ini; kegiatan masa depan tak perlu tanggal default

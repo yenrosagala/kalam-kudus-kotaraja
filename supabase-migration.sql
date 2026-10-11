@@ -404,6 +404,12 @@ ALTER TABLE public.galeri
   ADD CONSTRAINT c_g_event CHECK (char_length(event) <= 200),
   ADD CONSTRAINT c_g_link  CHECK (char_length(link)  <= 800);
 
+-- Kolom deskripsi album (ditambahkan belakangan): aman dijalankan ulang pada
+-- database yang sudah punya tabel galeri tanpa kolom ini.
+ALTER TABLE public.galeri ADD COLUMN IF NOT EXISTS deskripsi text NOT NULL DEFAULT '';
+ALTER TABLE public.galeri DROP CONSTRAINT IF EXISTS c_g_deskripsi;
+ALTER TABLE public.galeri ADD CONSTRAINT c_g_deskripsi CHECK (char_length(deskripsi) <= 600);
+
 ALTER TABLE public.galeri ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "publik baca galeri" ON public.galeri;
