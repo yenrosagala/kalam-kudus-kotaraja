@@ -158,8 +158,7 @@ function teksShare(m) {
   const par = String(m.renungan || '').split(/\n\s*\n/)[0].trim();
   const url = location.origin + location.pathname + '#/mezbah/' + m.tanggal;
   return [
-    '*Mezbah Keluarga*',
-    '*' + fmtTgl(m.tanggal) + '*',
+    '*Mezbah Keluarga*\n*' + fmtTgl(m.tanggal) + '*',
     m.judul ? '*' + m.judul + '*' : '',
     par,
     'Baca selanjutnya pada ' + url,
