@@ -152,23 +152,18 @@ const refHTML = (ref) => {
   }).join(' ');
 };
 
-// Teks share: field yang sama dengan isi dialog, urutan sama. Dipakai
-// bukaBaca() untuk isi tombol WhatsApp.
+// Teks share WhatsApp: ringkas (tanggal, judul, paragraf pertama) + tautan
+// ke renungan lengkap di situs. Tautan #/mezbah/<tanggal> membuka entri itu.
 function teksShare(m) {
-  const bagian = [
-    '*Renungan ' + fmtTgl(m.tanggal) + '*',
-    m.judul || '',
-    m.tema ? 'Tema: ' + m.tema : '',
-    m.bacaan ? 'Bacaan: ' + m.bacaan : '',
-    m.ayat ? 'Ayat kunci: ' + m.ayat : '',
-    m.renungan ? 'Renungan:\n' + m.renungan : '',
-    m.pesan ? 'Pesan hari ini:\n' + m.pesan : '',
-    m.refleksi ? 'Refleksi:\n' + m.refleksi : '',
-    m.doa_gkkk ? 'Pokok doa - Keluarga Besar GKKK:\n' + m.doa_gkkk : '',
-    m.doa_misi ? 'Pokok doa - Misi:\n' + m.doa_misi : '',
-    m.doa_penutup ? m.doa_penutup : '',
-  ];
-  return bagian.filter(s => s && s.trim()).join('\n\n');
+  const par = String(m.renungan || '').split(/\n\s*\n/)[0].trim();
+  const url = location.origin + location.pathname + '#/mezbah/' + m.tanggal;
+  return [
+    '*Mezbah Keluarga*',
+    '*' + fmtTgl(m.tanggal) + '*',
+    m.judul ? '*' + m.judul + '*' : '',
+    par,
+    'Baca selanjutnya pada ' + url,
+  ].filter(s => s && s.trim()).join('\n\n');
 }
 
 let MZBACA = null; // entri yang lagi dibuka di dBaca; dipakai tombol share
