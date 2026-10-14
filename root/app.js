@@ -878,13 +878,20 @@ const loadStatJemaat = async () => {
   kosong.hidden = false;
 };
 // Penghitung pengunjung (lihat section 13 di supabase-migration.sql).
-// Angka dihitung per pembukaan halaman, bukan orang unik - satu orang yang
-// membuka 3 halaman terhitung 3. Kalau butuh orang unik, tambah penanda di
-// localStorage sebelum memanggil kunjungi().
+// Satu hitungan per SESI peramban: sessionStorage menjaga agar reload halaman
+// berkali-kali tidak menambah angka. Sesi baru (tab/penjelajahan baru, atau
+// peramban di-restart) dihitung sekali lagi.
+// ponytail: sessionStorage, jadi menutup tab lalu membuka lagi = kunjungan
+// baru. Kalau mau benar-benar tak pernah dihitung ulang, ganti ke localStorage.
 const yestWIT = () => { const d = new Date(todayWIT() + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); };
 const loadKunjungan = async () => {
   const el = $('jKunjungan'); if (!el) return;
-  try { await sb(SB.rpc('kunjungi')); } catch { /* pencatat belum dipasang; tetap coba baca angka */ }
+  try {
+    if (!sessionStorage.getItem('kk_kunjungan')) {
+      sessionStorage.setItem('kk_kunjungan', '1');
+      await sb(SB.rpc('kunjungi'));
+    }
+  } catch { /* pencatat belum dipasang / storage diblokir; tetap coba baca angka */ }
   try {
     const t = todayWIT(), y = yestWIT();
     const rows = await sb(db('kunjungan').select('tanggal,jumlah').gte('tanggal', y).order('tanggal', { ascending: false }));
