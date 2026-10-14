@@ -877,6 +877,24 @@ const loadStatJemaat = async () => {
   }
   kosong.hidden = false;
 };
+// Penghitung pengunjung (lihat section 13 di supabase-migration.sql).
+// Angka dihitung per pembukaan halaman, bukan orang unik - satu orang yang
+// membuka 3 halaman terhitung 3. Kalau butuh orang unik, tambah penanda di
+// localStorage sebelum memanggil kunjungi().
+const yestWIT = () => { const d = new Date(todayWIT() + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); };
+const loadKunjungan = async () => {
+  const el = $('jKunjungan'); if (!el) return;
+  try { await sb(SB.rpc('kunjungi')); } catch { /* pencatat belum dipasang; tetap coba baca angka */ }
+  try {
+    const t = todayWIT(), y = yestWIT();
+    const rows = await sb(db('kunjungan').select('tanggal,jumlah').gte('tanggal', y).order('tanggal', { ascending: false }));
+    const num = (d) => { const r = rows.find(x => String(x.tanggal) === d); return r ? r.jumlah : 0; };
+    const kini = num(t), kemarin = num(y), d = kini - kemarin;
+    el.innerHTML = 'Pengunjung hari ini: <b>' + kini + '</b> ' +
+      (d === 0 ? '(sama dengan kemarin)' : d > 0 ? '(▲ ' + d + ' dari kemarin)' : '(▼ ' + (-d) + ' dari kemarin)');
+    el.hidden = false;
+  } catch { el.hidden = true; }
+};
 // ---- Kalimat statis di Tentang yang bisa disunting admin di tempat ----
 // Satu baris per kunci di tabel teks_tentang (lihat supabase-migration.sql).
 // Menambah kalimat yang bisa disunting = tambah atribut data-tek="..." di
@@ -1300,4 +1318,5 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) refr
 setInterval(refreshDaily, 300000);
 // Statistik publik tidak butuh login, jadi dimuat sekali saat halaman dibuka.
 loadStatJemaat();
+loadKunjungan();
 route();

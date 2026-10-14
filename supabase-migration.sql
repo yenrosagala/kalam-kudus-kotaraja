@@ -425,6 +425,35 @@ GRANT INSERT, UPDATE, DELETE ON public.galeri TO authenticated;
 GRANT USAGE, SELECT ON SEQUENCE public.galeri_id_seq TO authenticated;
 
 -- =====================================================================
+-- 13. PENGHITUNG PENGUNJUNG
+--   Satu baris per hari (tanggal, jumlah). Pengunjung TIDAK diberi hak
+--   tulis pada tabel; satu-satunya jalan menambah angka adalah memanggil
+--   fungsi kunjungi() di bawah, jadi angka tidak bisa dipalsukan lewat API.
+-- =====================================================================
+CREATE TABLE IF NOT EXISTS public.kunjungan (
+  tanggal date PRIMARY KEY,
+  jumlah  integer NOT NULL DEFAULT 0
+);
+
+ALTER TABLE public.kunjungan ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "publik baca kunjungan" ON public.kunjungan;
+CREATE POLICY "publik baca kunjungan" ON public.kunjungan
+  FOR SELECT TO anon, authenticated USING (true);
+
+GRANT SELECT ON public.kunjungan TO anon, authenticated;
+
+-- SECURITY DEFINER: berjalan sebagai pemilik tabel, jadi bisa menulis walau
+-- anon tidak punya (dan tidak akan pernah punya) INSERT/UPDATE.
+CREATE OR REPLACE FUNCTION public.kunjungi() RETURNS void
+LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+  INSERT INTO public.kunjungan(tanggal, jumlah)
+  VALUES ((now() AT TIME ZONE 'Asia/Jayapura')::date, 1)
+  ON CONFLICT (tanggal) DO UPDATE SET jumlah = public.kunjungan.jumlah + 1;
+$$;
+REVOKE ALL ON FUNCTION public.kunjungi() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.kunjungi() TO anon, authenticated;
+
+-- =====================================================================
 --  LANGKAH SETELAH MENJALANKAN FILE INI:
 --
 --  1. Rotate password postgres  (sudah kamu paste di chat - WAJIB ganti)
