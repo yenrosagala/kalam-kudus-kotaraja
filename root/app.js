@@ -883,7 +883,6 @@ const loadStatJemaat = async () => {
 // peramban di-restart) dihitung sekali lagi.
 // ponytail: sessionStorage, jadi menutup tab lalu membuka lagi = kunjungan
 // baru. Kalau mau benar-benar tak pernah dihitung ulang, ganti ke localStorage.
-const yestWIT = () => { const d = new Date(todayWIT() + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); };
 const loadKunjungan = async () => {
   const el = $('jKunjungan'); if (!el) return;
   try {
@@ -893,12 +892,13 @@ const loadKunjungan = async () => {
     }
   } catch { /* pencatat belum dipasang / storage diblokir; tetap coba baca angka */ }
   try {
-    const t = todayWIT(), y = yestWIT();
-    const rows = await sb(db('kunjungan').select('tanggal,jumlah').gte('tanggal', y).order('tanggal', { ascending: false }));
-    const num = (d) => { const r = rows.find(x => String(x.tanggal) === d); return r ? r.jumlah : 0; };
-    const kini = num(t), kemarin = num(y), d = kini - kemarin;
-    el.innerHTML = 'Pengunjung hari ini: <b>' + kini + '</b> ' +
-      (d === 0 ? '(sama dengan kemarin)' : d > 0 ? '(▲ ' + d + ' dari kemarin)' : '(▼ ' + (-d) + ' dari kemarin)');
+    const t = todayWIT();
+    // ponytail: satu baris per hari, jadi seluruh tabel kecil - jumlahkan di
+    // sini. Kalau nanti ada jutaan baris, pindahkan jumlah ke SUM() di database.
+    const rows = await sb(db('kunjungan').select('tanggal,jumlah'));
+    const total = rows.reduce((n, r) => n + (r.jumlah || 0), 0);
+    const kini = rows.reduce((n, r) => n + (String(r.tanggal) === t ? (r.jumlah || 0) : 0), 0);
+    el.innerHTML = 'Total pengunjung: <b>' + total + '</b> &middot; Pengunjung hari ini: <b>' + kini + '</b>';
     el.hidden = false;
   } catch { el.hidden = true; }
 };
