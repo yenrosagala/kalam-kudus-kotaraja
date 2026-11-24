@@ -53,7 +53,7 @@ nav .navlogin{margin-left:12px;align-self:center}
 .card h3{font-size:1.3rem;margin-bottom:6px}
 .card p{margin:0;color:var(--muted)}
 .card b{color:var(--ink)}
-.sec{padding:64px 0}
+.sec{padding-block:64px}
 h2{font-size:clamp(1.9rem,5vw,2.9rem);margin-bottom:12px}
 .sh{font-size:1.3rem;margin:34px 0 14px}
 /* kalimat yang boleh disunting admin: hanya muncul kalau ada sesi, jadi
@@ -262,3 +262,30 @@ dialog.form .mzf label:has(textarea){grid-column:1/-1}
 .bmini h3 a{color:inherit;text-decoration:none}
 .bmini h3 a:hover{color:var(--sea)}
 @media (max-width:520px){.bmthumb{flex:0 0 84px}}
+
+/* ---- layar kecil: header sticky jangan sampai makan seperempat layar ----
+   Navigasi jadi satu baris yang bisa digeser (8 tautan), bukan 4 baris.
+   ponytail: geser horizontal dipilih daripada menu hamburger - tanpa JS,
+   tanpa state, dan semua tautan tetap terlihat. Kalau nanti tautan > 12,
+   baru pertimbangkan tombol menu + panel. */
+@media (max-width:759px){
+  html{scroll-padding-top:calc(108px + env(safe-area-inset-top,0px))}
+  .bar{padding:8px 12px;gap:6px}
+  .brand{font-size:.9rem;gap:8px}
+  .logo{width:34px;height:34px;flex-basis:34px}
+  nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;width:100%;padding-bottom:2px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 32px),transparent)}
+  nav::-webkit-scrollbar{display:none}
+  nav a,nav button{flex:0 0 auto;white-space:nowrap;display:inline-flex;align-items:center;min-height:44px;padding:10px 12px}
+  nav .navlogin{margin-left:0}
+  .sm,.tabs button{min-height:44px}
+  .row input,.row select,.row textarea,.mzf input,.mzf textarea,.mzf select,.kfil input,.kfil select{min-height:44px}
+  .wrap{padding:0 32px}
+  .sec{padding-block:40px}
+  .split{grid-template-columns:1fr}
+  .kitem{grid-template-columns:56px minmax(0,1fr)}
+  .kmeta{grid-template-columns:1fr}
+  .pagehead{padding:36px 0 32px}
+  .card{padding:20px}
+  dialog,dialog.login,dialog.form,dialog.wide{width:calc(100% - 64px)}
+  .jbar span{flex-basis:92px}
+}

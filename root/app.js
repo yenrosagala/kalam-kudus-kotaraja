@@ -100,7 +100,8 @@ function route() {
   const nav = p === 'beritaIsi' ? 'berita' : p;
   document.querySelectorAll('.page').forEach(e => e.classList.toggle('on', e.id === p));
   document.querySelectorAll('#nav a').forEach(a => a.dataset.p === nav ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
-  document.title = (PAGES[p] ? PAGES[p] + ' | ' : '') + 'GK Kalam Kudus Kotaraja';
+  document.title = (PAGES[p] ? PAGES[p] + ' | ' : '') + 'Gereja Kristen Kalam Kudus Kotaraja';
+  document.querySelector('#nav a[aria-current="page"]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
   window.scrollTo(0, 0);
   if (p === 'beranda') { loadToday(); loadBeritaMini(); }
   if (p === 'mezbah') loadMezbah(seg[1]);
