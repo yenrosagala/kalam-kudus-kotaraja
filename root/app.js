@@ -254,6 +254,16 @@ let BRS = [];
 const foto = (b) => String(b || '').split('\n').map(s => s.trim()).filter(Boolean);
 const ringkas = (b) => b.ringkasan || String(b.isi || '').replace(/\s+/g, ' ').slice(0, 160);
 
+// ponytail: freshness mengikuti berita terbaru di Supabase; tanpa data, elemen tetap hidden (tidak ada tanggal basi di HTML).
+const setUpdated = (tanggal) => {
+  const p = $('bUpdated'), t = $('bUpdatedTime');
+  if (!p || !t) return;
+  if (!tanggal) { p.hidden = true; return; }
+  t.dateTime = tanggal;
+  t.textContent = fmtTgl(tanggal);
+  p.hidden = false;
+};
+
 const renderBerita = () => {
   $('blist').innerHTML = BRS.length ? BRS.map(b => {
     const f = foto(b.gambar)[0];
@@ -293,7 +303,8 @@ const loadBeritaMini = async () => {
 </article>`;
     }).join('') : '<p class="note">Belum ada berita.</p>';
     $('bMiniLihat').hidden = !lima.length;
-  } catch { el.innerHTML = '<p class="note">Berita belum dapat dimuat.</p>'; }
+    setUpdated(d[0]?.tanggal);
+  } catch { el.innerHTML = '<p class="note">Berita belum dapat dimuat.</p>'; setUpdated(''); }
 };
 
 async function bukaBerita(id) {
@@ -305,7 +316,7 @@ async function bukaBerita(id) {
   const paras = String(b.isi || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p class="pre">${esc(p)}</p>`).join('');
   host.innerHTML = `<article class="bisi">
 <p class="rdate">${esc(fmtTgl(b.tanggal))}</p>
-<h1>${esc(b.judul)}</h1>
+<h2 aria-level="1">${esc(b.judul)}</h2>
 ${b.ringkasan ? `<p class="lead">${esc(b.ringkasan)}</p>` : ''}
 ${f.length ? `<div class="car" aria-roledescription="carousel" aria-label="Foto berita"><div class="carT"><img id="bCarImg" src="${esc(f[0])}" alt="Foto 1 dari ${f.length}"></div>
 <div class="carN"><button class="sm" type="button" id="bCarPrev" aria-label="Foto sebelumnya" ${f.length < 2 ? 'disabled' : ''}>&larr;</button><span id="bCarCount" aria-live="polite">1 / ${f.length}</span><button class="sm" type="button" id="bCarNext" aria-label="Foto berikutnya" ${f.length < 2 ? 'disabled' : ''}>&rarr;</button></div></div>` : ''}
