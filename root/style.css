@@ -54,6 +54,18 @@ nav .navlogin{margin-left:12px;align-self:center}
 .card h2,.card h3{font-size:1.3rem;margin-bottom:6px}
 .card p{margin:0;color:var(--muted)}
 .card b{color:var(--ink)}
+/* ponytail: pakai kartu yang sudah ada; kalau detail, tetap pakai .kitem di bawah. */
+.kpekan{margin-bottom:26px}
+.kpekan > h2{margin:0}
+.kpekan #kPekan{margin-top:14px}
+.kpekan .note{margin:0}
+.kpekan .pkrow{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:10px 0;border-top:1px solid var(--line);font-size:.95rem}
+.kpekan .pkrow:first-child{border-top:0;padding-top:0}
+.kpekan .pkrow b{color:var(--muted);font-weight:600;font-size:.9rem}
+.kpekan .pkrow span{font-weight:600;overflow-wrap:anywhere}
+.kpekan .pkwa{white-space:nowrap;justify-self:start}
+/* ponytail: di layar lebar meta, judul, dan tombol jadi tiga kolom; di HP bertumpuk. */
+@media (min-width:760px){.kpekan .pkrow{grid-template-columns:minmax(220px,28%) 1fr auto;gap:18px;align-items:center}}
 .sec{padding-block:64px}
 h2{font-size:clamp(1.9rem,5vw,2.9rem);margin-bottom:12px}
 .sh{font-size:1.3rem;margin:34px 0 14px}

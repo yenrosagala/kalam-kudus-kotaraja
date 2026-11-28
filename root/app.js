@@ -61,7 +61,42 @@ const renderNext = () => {
   $('next').innerHTML = nx ? `<b>${esc(nx.judul)}</b><br>${esc(nx.komisi)}, ${tgl(nx.tanggal).wd} ${tgl(nx.tanggal).d} ${BULAN[tgl(nx.tanggal).m]}. <a href="#/jadwal"><b>Semua jadwal</b></a>` : '<a href="#/jadwal"><b>Lihat jadwal lengkap</b></a>';
 };
 
+// ponytail: "minggu ini" = Senin–Minggu berjalan, sama seperti daftar ulang tahun.
+// Kalau nanti mau "7 hari ke depan", ganti isi Set di sini, bukan filter di bawah.
+const pekanIni = () => {
+  const out = new Set(), m = new Date();
+  m.setHours(12, 0, 0, 0);
+  m.setDate(m.getDate() - ((m.getDay() + 6) % 7));
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(m); d.setDate(m.getDate() + i);
+    out.add(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
+  }
+  return out;
+};
+const jadwalPekan = () => {
+  const set = pekanIni();
+  return ROWS.filter(r => r.status !== 'BATAL' && set.has(r.tanggal)).sort((a, b) => sortKey(a) < sortKey(b) ? -1 : 1);
+};
+// ponytail: satu jadwal = satu pesan. Kirim massal ke jemaat tetap di dialog dKirim.
+const teksPekan = (r) => {
+  const t = tgl(r.tanggal);
+  return [
+    [t.wd + ', ' + t.d + ' ' + BULAN[t.m], KNAMA[r.komisi] || r.komisi, r.judul, r.waktu, r.tempat].filter(Boolean).join(' - '),
+    [r.pelayan_firman ? 'Pelayan Firman: ' + r.pelayan_firman : '', r.liturgis ? 'Liturgis: ' + r.liturgis : ''].filter(Boolean).join(' - ')
+  ].filter(Boolean).join('\n');
+};
+const renderPekan = () => {
+  $('kPekanCard').hidden = !ADMIN;
+  if (!ADMIN) return;
+  const list = jadwalPekan();
+  $('kPekan').innerHTML = list.length ? list.map((r, i) => {
+    const t = tgl(r.tanggal), hari = t.wd + ', ' + t.d + ' ' + BULAN[t.m];
+    return `<div class="pkrow"><b>${esc(hari)} &middot; ${esc(r.komisi)}${r.waktu ? ' &middot; ' + esc(r.waktu) : ''}</b><span>${esc(r.judul)}</span><button class="sm pkwa" type="button" data-i="${i}" aria-label="Kirim jadwal ${esc(hari)} via WhatsApp">Kirim via WA</button></div>`;
+  }).join('') : '<p class="note">Belum ada jadwal minggu ini.</p>';
+};
+
 function renderKomisi() {
+  renderPekan();
   const q = ($('kCari').value || '').toLowerCase();
   const kom = [...new Set(['Kebaktian Umum', 'Pemuda', 'Remaja', 'PW', 'PKP', ...ROWS.map(r => r.komisi)])];
   $('kchips').innerHTML = [['', 'Semua']].concat(kom.map(k => [k, k])).map(([v, l]) =>
@@ -199,6 +234,16 @@ $('mz').addEventListener('click', e => {
 $('waShare').addEventListener('click', () => {
   if (!MZBACA) return;
   window.open('https://wa.me/?text=' + encodeURIComponent(teksShare(MZBACA)), '_blank', 'noopener');
+});
+// ponytail: wa.me tanpa nomor -> pengguna sendiri yang memilih kontak. Tiap tombol
+// di baris mengirim satu jadwal saja; kirim massal tetap lewat dialog dKirim.
+$('kPekan').addEventListener('click', e => {
+  const btn = e.target.closest('.pkwa');
+  if (!btn) return;
+  const r = jadwalPekan()[+btn.dataset.i];
+  if (!r) return;
+  const teks = ['Jadwal ibadah GKKK Kotaraja minggu ini:', teksPekan(r)].join('\n');
+  window.open('https://wa.me/?text=' + encodeURIComponent(teks), '_blank', 'noopener');
 });
 $('klist').addEventListener('click', e => { const id = e.target.dataset.ubah; if (id) editK(id); });
 
